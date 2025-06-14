@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "p3000"
+version = "0.1.0"
+description = ""
+authors = ["G0shan4ik <egorkononec64@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+botasaurus = "^4.0.88"
+requests = "^2.32.4"
+aiohttp = "^3.12.13"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
