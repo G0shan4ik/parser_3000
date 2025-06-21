@@ -9,7 +9,20 @@ readme = "README.md"
 python = "^3.11"
 botasaurus = "^4.0.88"
 requests = "^2.32.4"
-aiohttp = "^3.12.13"
+python-dotenv = "^1.1.0"
+loguru = "^0.7.3"
+aiogram = "^3.4.1"
+pandas = "^2.3.0"
+openpyxl = "^3.1.5"
+npm = "^0.1.1"
+
+
+[tool.poetry.scripts]
+dev = "main:start_dev"
+
+
+[tool.poetry.group.dev.dependencies]
+botasaurus = "^4.0.88"
 
 
 [build-system]
