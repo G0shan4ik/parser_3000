@@ -2,11 +2,11 @@ import asyncio
 
 from loguru import logger
 
-from p3000.bott.core import bott, dp
+from p3000.bott.core import bott, dp, BOT_URL
 
 
 async def on_startup(dispatcher):
-    logger.success("Bot (https://t.me/new_p3000_bot) is running!")
+    logger.success(f"Bot{' ('+BOT_URL+')' if BOT_URL else ''} is running!")
 
 async def main() -> None:
     await bott.delete_webhook(drop_pending_updates=True)

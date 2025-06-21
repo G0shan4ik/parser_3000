@@ -13,6 +13,7 @@ load_dotenv()
 
 TOKEN_API = os.getenv("TOKEN_API")
 ADMIN = os.getenv("ADMIN")
+BOT_URL = os.getenv("BOT_URL")
 
 bott = Bot(
     token=TOKEN_API,
