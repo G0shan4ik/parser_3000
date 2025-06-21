@@ -113,13 +113,14 @@ class LegendaParser(BaseParserSelenium):
                 except Exception as ex:
                     logger.warning(f'Invalid URL_2 ({item}) ->\n{ex}\n')
         except Exception as ex:
+            self._fatal_error = True
             logger.error(f'Fatal ERROR Legenda ->\n{ex}\n\n')
 
         self.floor_count = len(self.result_mass)
 
-if __name__ == '__main__':
-    per = LegendaParser(
-        exel=True,
-        retry_count=1
-    )
-    per.run()
+# if __name__ == '__main__':
+#     per = LegendaParser(
+#         exel=True,
+#         retry_count=1
+#     )
+#     per.run()

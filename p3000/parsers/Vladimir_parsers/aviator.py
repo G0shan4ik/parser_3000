@@ -123,6 +123,7 @@ class AviatorParser(BaseParserRequests):
 
             self.floor_count = len(self.result_mass)
         except Exception as ex:
+            self._fatal_error = True
             logger.error(f'Fatal ERROR Aviator ->\n{ex}\n\n')
 
 

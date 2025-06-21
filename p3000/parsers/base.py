@@ -28,6 +28,8 @@ class BaseParserSelenium(ABC):
 
         self.floor_count: int = 0
 
+        self._fatal_error: bool = False
+
     @abstractmethod
     def pars_all_data(self) -> None:
         ...
@@ -45,8 +47,9 @@ class BaseParserSelenium(ABC):
             logger.success(f'START pars {self.site_name.upper()} --->')
 
             self.pars_all_data()
-
-            logger.success(f'FINISH pars {self.site_name.upper()} --->')
+            if not self._fatal_error:
+                logger.success(f'FINISH pars {self.site_name.upper()} --->')
+            else: logger.warning(f'FINISH pars {self.site_name.upper()} --->')
 
             if self.exel:
                 self.to_exel(mass=self.result_mass)
@@ -70,6 +73,8 @@ class BaseParserRequests(ABC):
         self.result_mass: list[dict] = []
         self.floor_count: int = 0
 
+        self._fatal_error: bool = False
+
     @abstractmethod
     def pars_all_data(self) -> None:
         ...
@@ -79,7 +84,9 @@ class BaseParserRequests(ABC):
 
         self.pars_all_data()
 
-        logger.success(f'FINISH pars {self.site_name.upper()} --->')
+        if not self._fatal_error:
+            logger.success(f'FINISH pars {self.site_name.upper()} --->')
+        else: logger.warning(f'FINISH pars {self.site_name.upper()} --->')
 
         if self.exel:
             self.to_exel(mass=self.result_mass)
@@ -104,6 +111,8 @@ class BaseAsyncParserRequests(ABC):
         self.session: aiohttp.ClientSession
 
         self.floor_count: int = 0
+
+        self._fatal_error: bool = False
 
     @abstractmethod
     async def init_session(self) -> None:
@@ -130,7 +139,9 @@ class BaseAsyncParserRequests(ABC):
         for process in self.chunks(processes, 5):
             await asyncio.gather(*process)
 
-        logger.success(f'FINISH pars {self.site_name.upper()} --->')
+        if not self._fatal_error:
+            logger.success(f'FINISH pars {self.site_name.upper()} --->')
+        else: logger.warning(f'FINISH pars {self.site_name.upper()} --->')
 
         await self.close_session()
         logger.info(f"CLOSE Async Session for {self.site_name}")

@@ -116,12 +116,13 @@ class NmarketParser(BaseParserSelenium):
 
             self.floor_count = len(self.result_mass)
         except Exception as ex:
+            self._fatal_error = True
             logger.error(f'Fatal ERROR Nmarket ->\n{ex}\n\n')
 
 
-if __name__ == '__main__':
-    per = NmarketParser(
-        exel=True,
-        headless=False
-    )
-    per.run()
+# if __name__ == '__main__':
+#     per = NmarketParser(
+#         exel=True,
+#         headless=False
+#     )
+#     per.run()

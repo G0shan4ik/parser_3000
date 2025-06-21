@@ -120,11 +120,12 @@ class VladimirParser(BaseAsyncParserRequests):
                     logger.warning(
                         f'''Invalid link: {f'https://vladimir.sk-continent.ru{item["absolute_url"]}'}\nExeption: {ex}\n''')
         except Exception as ex:
+            self._fatal_error = True
             logger.error(f'Fatal ERROR Vladimir_sk for url({url}) ->\n{ex}\n\n')
 
 
-if __name__ == '__main__':
-    per = VladimirParser(
-        exel=True
-    )
-    asyncio.run(per.run())
+# if __name__ == '__main__':
+#     per = VladimirParser(
+#         exel=True
+#     )
+#     asyncio.run(per.run())
