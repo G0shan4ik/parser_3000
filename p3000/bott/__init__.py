@@ -1,1 +1,1 @@
-from . import core, greet, set_handlers
+from . import core, greet, set_handlers, keyboard

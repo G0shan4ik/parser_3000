@@ -3,7 +3,7 @@ from aiogram.types import Message
 from aiogram.utils.markdown import hbold
 
 from .core import dp, ADMIN
-from .helpers import main_kb
+from .keyboard import main_kb
 
 
 @dp.message(CommandStart())
