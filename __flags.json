@@ -1,0 +1,27 @@
+{
+    "ivan": {
+        "bool": false,
+        "minutes": 0,
+        "seconds": 0,
+        "state": ["disabled", "in process", "completed!"]
+    },
+    "vladimir": {
+        "bool": false,
+        "minutes": 0,
+        "seconds": 0,
+        "state": ["disabled", "in process", "completed!"]
+    },
+    "all_pars": {
+        "bool": false,
+        "minutes": 0,
+        "seconds": 0,
+        "state": ["disabled", "in process", "completed!"]
+    },
+    "single": {
+        "parser_name": "",
+        "bool": false,
+        "minutes": 0,
+        "seconds": 0,
+        "state": ["disabled", "in process", "completed!"]
+    }
+}
