@@ -3,25 +3,25 @@
         "bool": false,
         "minutes": 0,
         "seconds": 0,
-        "state": ["disabled", "in process", "completed!"]
+        "state": "disabled"
     },
     "vladimir": {
         "bool": false,
         "minutes": 0,
         "seconds": 0,
-        "state": ["disabled", "in process", "completed!"]
+        "state": "disabled"
     },
     "all_pars": {
         "bool": false,
         "minutes": 0,
         "seconds": 0,
-        "state": ["disabled", "in process", "completed!"]
+        "state": "disabled"
     },
     "single": {
         "parser_name": "",
         "bool": false,
         "minutes": 0,
         "seconds": 0,
-        "state": ["disabled", "in process", "completed!"]
+        "state": "disabled"
     }
 }
