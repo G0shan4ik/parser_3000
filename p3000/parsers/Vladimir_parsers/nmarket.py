@@ -2,20 +2,22 @@ from loguru import logger
 from bs4 import BeautifulSoup
 import lxml
 
+from p3000.bott.helpers import FlagKey
 from p3000.parsers.base import BaseParserSelenium
 
 
 class NmarketParser(BaseParserSelenium):
-    def __init__(self, headless: bool = True, retry_count: int = 3, exel: bool = False):
+    def __init__(self, err_name = None, headless: bool = True, retry_count: int = 3, exel: bool = False):
         super().__init__(
             start_url='https://auth.nmarket.pro/Account/Login',
             site_name='nmarket',
             headless=headless,
             retry_count=retry_count,
-            exel=exel
+            exel=exel,
+            err_name=err_name if err_name else ["single", 'Olimp']
         )
 
-        self.cnt: int = 1
+        self.cnt: int = 0
         self.driver = None
 
         self.fl_cnt: int = -1
@@ -35,7 +37,7 @@ class NmarketParser(BaseParserSelenium):
     def pars_all_data(self) -> None:
         try:
             #  <-- sign in -->
-            logger.info('Started authorize nmarket')
+            logger.info('Started authorize Nmarket')
             while self.fl_cnt == -1:
                 try:
                     self.driver.get(self.start_url)
@@ -56,10 +58,12 @@ class NmarketParser(BaseParserSelenium):
                         self.driver.reload()
                         self.driver.sleep(3)
                         continue
-                    logger.info(f"ALL floor_count == {self.fl_cnt}")
+                    logger.info(f"Nmarket; ALL floor_count == {self.fl_cnt}")
                 except:
                     self.iter_count += 1
-                    logger.warning(f'Authorise error, start next iteration (iter count == {self.iter_count})')
+                    logger.warning(f'Authorise error Nmarket; start next iteration (iter count == {self.iter_count})')
+            self.driver.reload()
+            self.driver.sleep(3)
             self.driver.scroll()
             self.driver.scroll()
             self.driver.sleep(1)
@@ -67,12 +71,15 @@ class NmarketParser(BaseParserSelenium):
             self.driver.wait_for_element('div.pagination.ng-star-inserted', wait=10)
             soup = BeautifulSoup(self.driver.page_html, 'lxml')
             all_pages = int(soup.select_one('div.pagination.ng-star-inserted').select('div.ng-star-inserted')[-2].text)
-            logger.info(f"ALL pages == {all_pages}")
+            logger.info(f"Nmarket; ALL pages == {all_pages}")
+            if all_pages > 7000:
+                self._fatal_error = True
+                logger.error(f"Nmarket; The site is not working property")
 
             for item in range(1, 777):
                 try:
                     url = f'https://vld.nmarket.pro/search/apartmentgrid?isSmartLineMode=true&apartment.page={item}'
-                    logger.info(f"Page №{item};  Url == {url}")
+                    logger.info(f"Nmarket; Page №{item};  Url == {url}")
                     self.driver.get(url)
                     self.driver.sleep(3)
                     self.driver.scroll()
@@ -105,14 +112,16 @@ class NmarketParser(BaseParserSelenium):
 
                     if (len(self.result_mass) % item == 0 or
                             (all_pages == item and (len(self.result_mass) - len(dct)) % (all_pages - 1) == 0)):
-                        logger.info(f"Page №{item}; Floor_count == {len(self.result_mass)}")
-                    else: logger.warning(f"Page №{item}; Floor_count == {len(self.result_mass)}")
+                        logger.info(f"Nmarket; Page №{item}; Floor_count == {len(self.result_mass)}")
+                    else: logger.warning(f"Nmarket; Page №{item}; Floor_count == {len(self.result_mass)}")
 
                 except Exception as ex:
                     if self.fl_cnt == len(self.result_mass):
                         break
                     self.cnt += 1
-                    logger.error(f'Nmarket error №{self.cnt}; Page №{item}\n(ex -> {ex})\n')
+                    logger.warning(f'Invalid link Nmarket;  exception count№{self.cnt}; Page №{item}\n(ex -> {ex})\n')
+                    if self.cnt == 4:
+                        break
 
             self.floor_count = len(self.result_mass)
         except Exception as ex:
@@ -120,9 +129,9 @@ class NmarketParser(BaseParserSelenium):
             logger.error(f'Fatal ERROR Nmarket ->\n{ex}\n\n')
 
 
-# if __name__ == '__main__':
-#     per = NmarketParser(
-#         exel=True,
-#         headless=False
-#     )
-#     per.run()
+if __name__ == '__main__':
+    per = NmarketParser(
+        exel=True,
+        headless=False,
+    )
+    per.run()

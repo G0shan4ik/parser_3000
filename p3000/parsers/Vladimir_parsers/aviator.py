@@ -1,14 +1,16 @@
+import asyncio
+
 from loguru import logger
 from bs4 import BeautifulSoup
 import lxml
 
-from p3000.parsers.base import BaseParserRequests
+from p3000.parsers.base import BaseParserRequests, FlagKey
 
 from requests import get
 
 
 class AviatorParser(BaseParserRequests):
-    def __init__(self, exel: bool = False):
+    def __init__(self, err_name = None, exel: bool = False):
         super().__init__(
             all_links=[
                 'https://kvartal-aviator.ru/kupit-kvartiru-v-kovrove/studii/',
@@ -23,7 +25,8 @@ class AviatorParser(BaseParserRequests):
                 'https://kvartal-aviator.ru/kupit-kvartiru-v-kovrove/dom2/studii/'
             ],
             site_name='aviator',
-            exel=exel
+            exel=exel,
+            err_name=err_name if err_name else ["single", 'Aviator']
         )
 
         self.__pars_links: list[str] = []
@@ -119,11 +122,13 @@ class AviatorParser(BaseParserRequests):
                     )
 
                 except Exception as ex:
-                    logger.warning(f'''Invalid link: {item}\nExeption: {ex}\n''')
+                    asyncio.run(self.update_err(error="AviatorParser " + str(ex)))
+                    logger.warning(f'''Invalid link Aviator: {item}\nExeption: {ex}\n''')
 
             self.floor_count = len(self.result_mass)
         except Exception as ex:
             self._fatal_error = True
+            asyncio.run(self.update_err(error="AviatorParser // Fatal ERROR  -  " + str(ex)))
             logger.error(f'Fatal ERROR Aviator ->\n{ex}\n\n')
 
 

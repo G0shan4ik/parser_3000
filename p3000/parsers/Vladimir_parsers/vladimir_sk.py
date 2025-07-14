@@ -2,7 +2,7 @@ from loguru import logger
 from bs4 import BeautifulSoup
 import lxml
 
-from p3000.parsers.base import BaseAsyncParserRequests
+from p3000.parsers.base import BaseAsyncParserRequests, FlagKey
 
 import aiohttp
 import asyncio
@@ -10,14 +10,15 @@ from requests import get
 
 
 class VladimirParser(BaseAsyncParserRequests):
-    def __init__(self, exel: bool = False):
+    def __init__(self, err_name = None, exel: bool = False):
         super().__init__(
             all_links=[
                 'https://vladimir.sk-continent.ru/api/v1/property/properties/?type=0&page=1&page_size=1',
                 'https://www.sk-continent.ru/api/v1/property/properties/?type=0&page=1&page_size=1'
             ],
             site_name='vladimir_sk',
-            exel=exel
+            exel=exel,
+            err_name=err_name if err_name else ["single", 'Olimp']
         )
 
         self.session = None
@@ -40,6 +41,7 @@ class VladimirParser(BaseAsyncParserRequests):
             "1 совмещенный": "C",
             "2 раздельных": 2,
         }
+
 
     async def return_s_y(self, url: str) -> str | int:
         async with self.session.get(url) as response:
@@ -86,7 +88,7 @@ class VladimirParser(BaseAsyncParserRequests):
                 cnt += 1
                 try:
                     logger.info(
-                        f'Континент, "{"Владимир" if "vladimir" in url else "Ковров"}"; link {cnt} out of {pagination}')
+                        f'Vladimir_sk; Континент, "{"Владимир" if "vladimir" in url else "Ковров"}"; link {cnt} out of {pagination}')
                     try:
                         price_100 = self.num(item["new_price"].replace('.00', ''))
                     except:
@@ -117,10 +119,12 @@ class VladimirParser(BaseAsyncParserRequests):
 
 
                 except Exception as ex:
+                    await self.update_err(error="VladimirParser: " + str(ex))
                     logger.warning(
-                        f'''Invalid link: {f'https://vladimir.sk-continent.ru{item["absolute_url"]}'}\nExeption: {ex}\n''')
+                        f'''Invalid link Vladimir_sk: {f'https://vladimir.sk-continent.ru{item["absolute_url"]}'}\nExeption: {ex}\n''')
         except Exception as ex:
             self._fatal_error = True
+            await self.update_err(error="VladimirParser // Fatal ERROR  -  " + str(ex))
             logger.error(f'Fatal ERROR Vladimir_sk for url({url}) ->\n{ex}\n\n')
 
 

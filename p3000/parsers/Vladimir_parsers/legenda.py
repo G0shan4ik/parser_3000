@@ -1,12 +1,14 @@
+import asyncio
+
 from loguru import logger
 from bs4 import BeautifulSoup
 import lxml
 
-from p3000.parsers.base import BaseParserSelenium
+from p3000.parsers.base import BaseParserSelenium, FlagKey
 
 
 class LegendaParser(BaseParserSelenium):
-    def __init__(self, headless: bool = True, retry_count: int = 3, exel: bool = False):
+    def __init__(self, err_name = None, headless: bool = True, retry_count: int = 3, exel: bool = False):
         super().__init__(
             start_url=[
                 'https://legendakovrova.ru/',
@@ -15,7 +17,8 @@ class LegendaParser(BaseParserSelenium):
             site_name='legenda',
             headless=headless,
             retry_count=retry_count,
-            exel=exel
+            exel=exel,
+            err_name=err_name if err_name else ["single", 'Olimp']
         )
 
         self.driver = None
@@ -61,7 +64,8 @@ class LegendaParser(BaseParserSelenium):
                     for h in flats:
                         self.__pars_links.append(h.get('href'))
                 except Exception as ex:
-                    logger.warning(f'Invalid URL_1 ({item}) ->\n{ex}\n')
+                    asyncio.run(self.update_err(error="LegendaParser " + str(ex)))
+                    logger.warning(f'Invalid URL_1 Legenda ({item}) ->\n{ex}\n')
 
             logger.info('Success pars all pars_links for Legenda')
 
@@ -111,9 +115,11 @@ class LegendaParser(BaseParserSelenium):
                             }
                         )
                 except Exception as ex:
-                    logger.warning(f'Invalid URL_2 ({item}) ->\n{ex}\n')
+                    asyncio.run(self.update_err(error="LegendaParser " + str(ex)))
+                    logger.warning(f'Invalid URL_2 Legenda ({item}) ->\n{ex}\n')
         except Exception as ex:
             self._fatal_error = True
+            asyncio.run(self.update_err(error="LegendaParser // Fatal ERROR  -  " + str(ex)))
             logger.error(f'Fatal ERROR Legenda ->\n{ex}\n\n')
 
         self.floor_count = len(self.result_mass)

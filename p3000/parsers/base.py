@@ -1,6 +1,5 @@
 import asyncio
 from abc import ABC, abstractmethod
-from contextlib import closing
 from typing import Awaitable
 
 from botasaurus.browser import Driver, browser
@@ -13,15 +12,51 @@ from loguru import logger
 
 import aiohttp
 
+from p3000.bott.helpers import FlagsManager, FlagKey
 
-class BaseParserSelenium(ABC):
-    def __init__(self, start_url: str|list[str], site_name: str, headless: bool, retry_count: int, exel: bool):
+
+
+class BaseModel:
+    def __init__(self, site_name: str, err_name: [FlagKey]):
+        self.site_name: str = site_name
+        self.err_name: [FlagKey] = err_name
+
+    async def update_err(self, error: str) -> None:
+        fl = FlagsManager()
+
+        dct_err: dict = await fl.read_flag_value(
+            key=self.err_name[0],
+            subkey="errors"
+        )
+        dct_err = dct_err if dct_err else dict()
+
+        if dct_err.get(self.err_name[0]):
+            dct_err[self.err_name[0]].append([self.err_name[1], error])
+        else: dct_err[self.err_name[0]] = [self.err_name[1], error]
+
+        await fl.update_flag_value(
+            key=self.err_name[0],
+            subkey="errors",
+            value=dct_err
+        )
+
+    def to_exel(self, mass: list[dict]) -> None:
+        df = pd.DataFrame(mass)
+        df.to_excel(f"all_exel/{datetime.now().date()}_{self.site_name}.xlsx")
+
+        logger.success(f'<-- Success created file (name -> {self.site_name})')
+
+
+class BaseParserSelenium(ABC, BaseModel):
+    def __init__(self, start_url: str|list[str], site_name: str, err_name: [FlagKey], headless: bool, retry_count: int, exel: bool):
+        super().__init__(
+            site_name=site_name,
+            err_name=err_name
+        )
         self.start_url: str|list[str] = start_url
         self.__headless: bool = headless
         self.retry_count: int = retry_count
         self.exel = exel
-
-        self.site_name: str = site_name
 
         self.result_mass: list[dict] = []
         self.driver: Driver
@@ -57,15 +92,14 @@ class BaseParserSelenium(ABC):
         run_parser(data="https://www.google.com/")
         return [self.result_mass, self.floor_count]
 
-    def to_exel(self, mass: list[dict]) -> None:
-        df = pd.DataFrame(mass)
-        df.to_excel(f"all_exel/{datetime.now().date()}_{self.site_name}.xlsx")
 
-        logger.success(f'<-- Success created file (name -> {self.site_name})')
+class BaseParserRequests(ABC, BaseModel):
+    def __init__(self, all_links: list[str] | str, site_name: str, err_name: [FlagKey], exel: bool):
+        super().__init__(
+            site_name=site_name,
+            err_name=err_name
+        )
 
-
-class BaseParserRequests(ABC):
-    def __init__(self, all_links: list[str] | str, site_name: str, exel: bool):
         self.all_links: list[str] | str = all_links
         self.site_name: str = site_name
         self.exel: bool = exel
@@ -93,15 +127,14 @@ class BaseParserRequests(ABC):
 
         return [self.result_mass, self.floor_count]
 
-    def to_exel(self, mass: list[dict]) -> None:
-        df = pd.DataFrame(mass)
-        df.to_excel(f"all_exel/{datetime.now().date()}_{self.site_name}.xlsx")
 
-        logger.success(f'<-- Success created file (name -> {self.site_name})')
+class BaseAsyncParserRequests(ABC, BaseModel):
+    def __init__(self, all_links: list[str] | str, site_name: str, err_name: [FlagKey], exel: bool):
+        super().__init__(
+            site_name=site_name,
+            err_name=err_name
+        )
 
-
-class BaseAsyncParserRequests(ABC):
-    def __init__(self, all_links: list[str] | str, site_name: str, exel: bool):
         self.all_links: list[str] | str = all_links
         self.exel = exel
 
@@ -150,12 +183,6 @@ class BaseAsyncParserRequests(ABC):
             self.to_exel(mass=self.result_mass)
 
         return [self.result_mass, self.floor_count]
-
-    def to_exel(self, mass: list[dict]) -> None:
-        df = pd.DataFrame(mass)
-        df.to_excel(f"all_exel/{datetime.now().date()}_{self.site_name}.xlsx")
-
-        logger.success(f'<-- Success created file (name -> {self.site_name})')
 
     @staticmethod
     def chunks(lst, n):
