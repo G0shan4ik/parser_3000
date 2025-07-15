@@ -119,7 +119,7 @@ class GloraxParser(BaseAsyncParserRequests):
     async def pars_data(self, data: str) -> None:
         link, price, otd, completion, rooms, number = data.split('#')
         try:
-            logger.info(f'Glorax; Start pars url == {link}')
+            logger.info(f'Glorax; Start pars link == {link}')
             price = int(float(price))
             response = await self.session.request.get(
                 url=link
@@ -151,17 +151,17 @@ class GloraxParser(BaseAsyncParserRequests):
         except Exception as ex:
             await self.update_err(error="GloraxParser: " + str(ex))
             logger.warning(
-                f'''Invalid link Glorax: {link}\nExeption: {ex}\n''')
+                f'''Glorax; Invalid link: {link}\nExeption: {ex}\n''')
 
     async def pars_all_data(self, url: str) -> None:
         try:
-            logger.info(f"Start pars Glorax; URL == {url}")
+            logger.success(f"Glorax; Start pars; URL == {url}")
             response = await self.session.request.get(
                 url
             )
             if response.status not in [200, 201, 202, 203, 204]:
                 await self.update_err(error="GloraxParser: " + f"Status code error == {response.status}")
-                logger.warning('Invalid status code')
+                logger.warning(f'Glorax; Invalid status code (Status code == {response.status})')
 
             all_links: list[list] = await self.pars_links()
             processes: [Awaitable] = []
@@ -177,9 +177,11 @@ class GloraxParser(BaseAsyncParserRequests):
             await self.update_err(error="GloraxParser // Fatal ERROR  -  " + str(ex))
             logger.error(f'Fatal ERROR Glorax for url({url}) ->\n{ex}\n\n')
 
+        self.floor_count = len(self.result_mass)
 
-if __name__ == '__main__':
-    per = GloraxParser(
-        exel=True
-    )
-    asyncio.run(per.run())
+
+# if __name__ == '__main__':
+#     per = GloraxParser(
+#         exel=True
+#     )
+#     asyncio.run(per.run())

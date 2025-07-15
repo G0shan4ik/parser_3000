@@ -4,7 +4,7 @@ from loguru import logger
 from bs4 import BeautifulSoup
 import lxml
 
-from p3000.parsers.base import BaseParserSelenium, FlagKey
+from p3000.parsers.base import BaseParserSelenium
 
 
 class LegendaParser(BaseParserSelenium):
@@ -18,7 +18,7 @@ class LegendaParser(BaseParserSelenium):
             headless=headless,
             retry_count=retry_count,
             exel=exel,
-            err_name=err_name if err_name else ["single", 'Olimp']
+            err_name=err_name if err_name else ["single", 'Legenda']
         )
 
         self.driver = None
@@ -65,9 +65,9 @@ class LegendaParser(BaseParserSelenium):
                         self.__pars_links.append(h.get('href'))
                 except Exception as ex:
                     asyncio.run(self.update_err(error="LegendaParser " + str(ex)))
-                    logger.warning(f'Invalid URL_1 Legenda ({item}) ->\n{ex}\n')
+                    logger.warning(f'Legenda; Invalid URL_1 ({item}) ->\n{ex}\n')
 
-            logger.info('Success pars all pars_links for Legenda')
+            logger.info('Legenda; Success pars all pars_links')
 
             for item in self.__pars_links:
                 try:
@@ -115,14 +115,15 @@ class LegendaParser(BaseParserSelenium):
                             }
                         )
                 except Exception as ex:
-                    asyncio.run(self.update_err(error="LegendaParser " + str(ex)))
-                    logger.warning(f'Invalid URL_2 Legenda ({item}) ->\n{ex}\n')
+                    asyncio.run(self.update_err(error="LegendaParser: " + str(ex)))
+                    logger.warning(f'Legenda; Invalid URL_2 ({item}) ->\n{ex}\n')
         except Exception as ex:
             self._fatal_error = True
             asyncio.run(self.update_err(error="LegendaParser // Fatal ERROR  -  " + str(ex)))
             logger.error(f'Fatal ERROR Legenda ->\n{ex}\n\n')
 
         self.floor_count = len(self.result_mass)
+
 
 # if __name__ == '__main__':
 #     per = LegendaParser(

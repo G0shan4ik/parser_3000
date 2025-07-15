@@ -1,8 +1,9 @@
+import asyncio
+
 from loguru import logger
 from bs4 import BeautifulSoup
 import lxml
 
-from p3000.bott.helpers import FlagKey
 from p3000.parsers.base import BaseParserSelenium
 
 
@@ -14,7 +15,7 @@ class NmarketParser(BaseParserSelenium):
             headless=headless,
             retry_count=retry_count,
             exel=exel,
-            err_name=err_name if err_name else ["single", 'Olimp']
+            err_name=err_name if err_name else ["single", 'Nmarket']
         )
 
         self.cnt: int = 0
@@ -37,7 +38,7 @@ class NmarketParser(BaseParserSelenium):
     def pars_all_data(self) -> None:
         try:
             #  <-- sign in -->
-            logger.info('Started authorize Nmarket')
+            logger.info('Nmarket; Started authorize')
             while self.fl_cnt == -1:
                 try:
                     self.driver.get(self.start_url)
@@ -61,7 +62,7 @@ class NmarketParser(BaseParserSelenium):
                     logger.info(f"Nmarket; ALL floor_count == {self.fl_cnt}")
                 except:
                     self.iter_count += 1
-                    logger.warning(f'Authorise error Nmarket; start next iteration (iter count == {self.iter_count})')
+                    logger.warning(f'Nmarket; Authorise error; Start next iteration (iter count == {self.iter_count})')
             self.driver.reload()
             self.driver.sleep(3)
             self.driver.scroll()
@@ -119,7 +120,7 @@ class NmarketParser(BaseParserSelenium):
                     if self.fl_cnt == len(self.result_mass):
                         break
                     self.cnt += 1
-                    logger.warning(f'Invalid link Nmarket;  exception count№{self.cnt}; Page №{item}\n(ex -> {ex})\n')
+                    logger.warning(f'Nmarket; Invalid link; Exception count№{self.cnt}; Page №{item}\n(ex -> {ex})\n')
                     if self.cnt == 4:
                         break
 
@@ -128,10 +129,12 @@ class NmarketParser(BaseParserSelenium):
             self._fatal_error = True
             logger.error(f'Fatal ERROR Nmarket ->\n{ex}\n\n')
 
+        self.floor_count = len(self.result_mass)
 
-if __name__ == '__main__':
-    per = NmarketParser(
-        exel=True,
-        headless=False,
-    )
-    per.run()
+
+# if __name__ == '__main__':
+#     per = NmarketParser(
+#         exel=True,
+#         headless=False,
+#     )
+#     per.run()

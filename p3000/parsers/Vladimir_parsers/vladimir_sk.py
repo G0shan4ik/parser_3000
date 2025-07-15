@@ -2,7 +2,7 @@ from loguru import logger
 from bs4 import BeautifulSoup
 import lxml
 
-from p3000.parsers.base import BaseAsyncParserRequests, FlagKey
+from p3000.parsers.base import BaseAsyncParserRequests
 
 import aiohttp
 import asyncio
@@ -18,7 +18,7 @@ class VladimirParser(BaseAsyncParserRequests):
             ],
             site_name='vladimir_sk',
             exel=exel,
-            err_name=err_name if err_name else ["single", 'Olimp']
+            err_name=err_name if err_name else ["single", 'VladimirSK']
         )
 
         self.session = None
@@ -69,7 +69,7 @@ class VladimirParser(BaseAsyncParserRequests):
 
     async def pars_all_data(self, url: str) -> None:
         try:
-            logger.info(f"Start pars Vladimir_sk; URL == {url}")
+            logger.info(f"VladimirSK; Start pars URL == {url}")
             pagination: int = get(url=url).json()['count']
             self.floor_count += pagination
 
@@ -88,7 +88,7 @@ class VladimirParser(BaseAsyncParserRequests):
                 cnt += 1
                 try:
                     logger.info(
-                        f'Vladimir_sk; Континент, "{"Владимир" if "vladimir" in url else "Ковров"}"; link {cnt} out of {pagination}')
+                        f'VladimirSK; Континент, "{"Владимир" if "vladimir" in url else "Ковров"}"; link {cnt} out of {pagination}')
                     try:
                         price_100 = self.num(item["new_price"].replace('.00', ''))
                     except:
@@ -121,11 +121,13 @@ class VladimirParser(BaseAsyncParserRequests):
                 except Exception as ex:
                     await self.update_err(error="VladimirParser: " + str(ex))
                     logger.warning(
-                        f'''Invalid link Vladimir_sk: {f'https://vladimir.sk-continent.ru{item["absolute_url"]}'}\nExeption: {ex}\n''')
+                        f'''VladimirSK; Invalid link: {f'https://vladimir.sk-continent.ru{item["absolute_url"]}'}\nExeption: {ex}\n''')
         except Exception as ex:
             self._fatal_error = True
             await self.update_err(error="VladimirParser // Fatal ERROR  -  " + str(ex))
-            logger.error(f'Fatal ERROR Vladimir_sk for url({url}) ->\n{ex}\n\n')
+            logger.error(f'Fatal ERROR VladimirSK for url({url}) ->\n{ex}\n\n')
+
+        self.floor_count = len(self.result_mass)
 
 
 # if __name__ == '__main__':

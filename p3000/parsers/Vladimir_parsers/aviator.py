@@ -4,7 +4,7 @@ from loguru import logger
 from bs4 import BeautifulSoup
 import lxml
 
-from p3000.parsers.base import BaseParserRequests, FlagKey
+from p3000.parsers.base import BaseParserRequests
 
 from requests import get
 
@@ -75,7 +75,6 @@ class AviatorParser(BaseParserRequests):
 
     def pars_all_data(self) -> None:
         try:
-            logger.info('Started pars Aviator')
             for url in self.all_links:
                 response = get(
                     url
@@ -84,7 +83,7 @@ class AviatorParser(BaseParserRequests):
                 for item in soup.select_one('div.choice__table').select('a'):
                     self.__pars_links.append(f'https://kvartal-aviator.ru{item.get("href")}')
 
-            logger.info('Pars all Aviator links; Start pars data')
+            logger.info('Aviator; Pars all Aviator links; Start pars data')
 
             for item in self.__pars_links:
                 logger.info(
@@ -122,14 +121,14 @@ class AviatorParser(BaseParserRequests):
                     )
 
                 except Exception as ex:
-                    asyncio.run(self.update_err(error="AviatorParser " + str(ex)))
+                    asyncio.run(self.update_err(error="AviatorParser: " + str(ex)))
                     logger.warning(f'''Invalid link Aviator: {item}\nExeption: {ex}\n''')
-
-            self.floor_count = len(self.result_mass)
         except Exception as ex:
             self._fatal_error = True
             asyncio.run(self.update_err(error="AviatorParser // Fatal ERROR  -  " + str(ex)))
             logger.error(f'Fatal ERROR Aviator ->\n{ex}\n\n')
+
+        self.floor_count = len(self.result_mass)
 
 
 # if __name__ == '__main__':
