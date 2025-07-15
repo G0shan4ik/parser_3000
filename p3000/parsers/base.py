@@ -44,7 +44,7 @@ class BaseModel:
         df = pd.DataFrame(mass)
         df.to_excel(f"all_exel/{datetime.now().date()}_{self.site_name}.xlsx")
 
-        logger.success(f'<-- Success created file (name -> {self.site_name})')
+        logger.success(f'{self.site_name.upper()}; <-- Success created file (name -> {self.site_name})')
 
 
 class BaseParserSelenium(ABC, BaseModel):
@@ -79,14 +79,14 @@ class BaseParserSelenium(ABC, BaseModel):
         def run_parser(driver: Driver, data: str) -> None:
             self.driver = driver
             self.driver.get(data)
-            logger.success(f'START pars {self.site_name.upper()} --->')
+            logger.success(f'{self.site_name.upper()}; START pars {self.site_name.upper()} --->')
 
             self.pars_all_data()
             if not self._fatal_error:
-                logger.success(f'FINISH pars {self.site_name.upper()} --->')
-            else: logger.warning(f'FINISH pars {self.site_name.upper()} --->')
+                logger.success(f'{self.site_name.upper()}; FINISH pars; All_Items == {self.floor_count} --->')
+            else: logger.warning(f'{self.site_name.upper()}; FINISH pars; All_Items == {self.floor_count} --->')
 
-            if self.exel:
+            if self.exel and not self._fatal_error:
                 self.to_exel(mass=self.result_mass)
 
         run_parser(data="https://www.google.com/")
@@ -114,15 +114,15 @@ class BaseParserRequests(ABC, BaseModel):
         ...
 
     def run(self) -> list[list[dict] | int]:
-        logger.success(f'START pars {self.site_name.upper()} --->')
+        logger.success(f'{self.site_name.upper()}; START pars {self.site_name.upper()} --->')
 
         self.pars_all_data()
 
         if not self._fatal_error:
-            logger.success(f'FINISH pars {self.site_name.upper()} --->')
-        else: logger.warning(f'FINISH pars {self.site_name.upper()} --->')
+            logger.success(f'{self.site_name.upper()}; FINISH pars; All_Items == {self.floor_count} --->')
+        else: logger.warning(f'{self.site_name.upper()}; FINISH pars; All_Items == {self.floor_count} --->')
 
-        if self.exel:
+        if self.exel and not self._fatal_error:
             self.to_exel(mass=self.result_mass)
 
         return [self.result_mass, self.floor_count]
@@ -160,10 +160,10 @@ class BaseAsyncParserRequests(ABC, BaseModel):
         ...
 
     async def run(self) -> list[list[dict] | int]:
-        logger.success(f'START pars {self.site_name.upper()} --->')
+        logger.success(f'{self.site_name.upper()}; START pars {self.site_name.upper()} --->')
 
         await self.init_session()
-        logger.info(f"INIT Async Session for {self.site_name}")
+        logger.info(f"{self.site_name.upper()}; INIT Async Session")
 
         processes: [Awaitable] = []
         for url in self.all_links:
@@ -173,13 +173,13 @@ class BaseAsyncParserRequests(ABC, BaseModel):
             await asyncio.gather(*process)
 
         if not self._fatal_error:
-            logger.success(f'FINISH pars {self.site_name.upper()} --->')
-        else: logger.warning(f'FINISH pars {self.site_name.upper()} --->')
+            logger.success(f'{self.site_name.upper()}; FINISH pars; All_Items == {self.floor_count} --->')
+        else: logger.warning(f'{self.site_name.upper()}; FINISH pars; All_Items == {self.floor_count} --->')
 
         await self.close_session()
-        logger.info(f"CLOSE Async Session for {self.site_name}")
+        logger.info(f"{self.site_name.upper()}; CLOSE Async Session")
 
-        if self.exel:
+        if self.exel and not self._fatal_error:
             self.to_exel(mass=self.result_mass)
 
         return [self.result_mass, self.floor_count]

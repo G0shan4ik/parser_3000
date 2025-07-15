@@ -9,7 +9,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 from typing import Union, Any, Type, Tuple
 
-from .Vladimir_parsers import vladimir_sk, nmarket, legenda, aviator, glorax
+from .Vladimir_parsers import vladimir_sk, legenda, aviator, glorax, nmarket
+from .Ivanovo_parsers import csy, default_kvartal, evropey_stile, fenix, ksk_holding, levitan, olimp, vidniy
 
 
 ParserInitDef = Union[
@@ -27,7 +28,7 @@ class BaseManager:
         df = pd.DataFrame(mass)
         df.to_excel(f"all_exel/{datetime.now().date()}_{self.module_name}.xlsx")
 
-        logger.success(f'<-- Success created MODULE_file (name -> {self.module_name})')
+        logger.success(f'<-- Success created MODULE_file (module_name -> {self.module_name})')
 
         return f"all_exel/{datetime.now().date()}_{self.module_name}.xlsx"
 
@@ -77,14 +78,14 @@ class BaseManager:
                     elif isinstance(result, dict):
                         results.append(result)
             except Exception as ex:
-                logger.error(f'Fatal ERROR Vladimir_MANAGER ->\n{ex}\n\n')
+                logger.error(f'{self.module_name}; Fatal ERROR ->\n{ex}\n\n')
 
         return results
 
 
 
 class IvanovoManager(BaseManager):
-    def __init__(self, batch_size: int = 3):
+    def __init__(self, batch_size: int = 4):
         super().__init__(
             module_name='Ivanovo',
             batch_size=batch_size
@@ -92,15 +93,20 @@ class IvanovoManager(BaseManager):
 
     async def run_ivanovo_module(self):
         parsers = [
-            # (vladimir_sk.VladimirParser, (), {'err_name': 'vladimir'}),
-            # (legenda.LegendaParser, (), {'err_name': 'vladimir'}),
-            # (aviator.AviatorParser, (), {'err_name': 'vladimir'}),
-            # (nmarket.NmarketParser, (), {'headless': False, 'err_name': 'vladimir'}),
+            (fenix.FenixParser, (), {'headless': False, 'err_name': ['ivan', 'Fenix']}),
+            (csy.CSYParser, (), {'err_name': ['ivan', 'CSY']}),
+            (default_kvartal.DefaultKvartalParser, (), {'err_name': ['ivan', 'DefaultKvartal']}),
+            (evropey_stile.EuropeyStileParser, (), {'err_name': ['ivan', 'EuropeyStile']}),
+            (ksk_holding.KSKHoldingParser, (), {'err_name': ['ivan', 'KSK_Holding']}),
+            (levitan.LevitanParser, (), {'err_name': ['ivan', 'Levitan']}),
+            (olimp.OlimpParser, (), {'err_name': ['ivan', 'Olimp']}),
+            (vidniy.VidniyParser, (), {'err_name': ['ivan', 'Vidniy']}),
         ]
 
         results: list[dict] = await self.__run_all_parsers(parsers)
 
         return self.to_exel(results)
+
 
 class VladimirManager(BaseManager):
     def __init__(self, batch_size: int = 4):
@@ -122,7 +128,39 @@ class VladimirManager(BaseManager):
 
         return self.to_exel(results)
 
-if __name__ == '__main__':
-    per = VladimirManager()
-    asyncio.run(per.run_vladimir_module())
+
+class AllParsManager(BaseManager):
+    def __init__(self, batch_size: int = 4):
+        super().__init__(
+            module_name='all_pars',
+            batch_size=batch_size
+        )
+
+    async def run_all_parsers_module(self) -> str:
+        parsers = [
+            (fenix.FenixParser, (), {'headless': False, 'err_name': ['all_pars', 'Fenix']}),
+            (csy.CSYParser, (), {'err_name': ['all_pars', 'CSY']}),
+            (default_kvartal.DefaultKvartalParser, (), {'err_name': ['all_pars', 'DefaultKvartal']}),
+            (evropey_stile.EuropeyStileParser, (), {'err_name': ['all_pars', 'EuropeyStile']}),
+            (ksk_holding.KSKHoldingParser, (), {'err_name': ['all_pars', 'KSK_Holding']}),
+            (levitan.LevitanParser, (), {'err_name': ['all_pars', 'Levitan']}),
+            (olimp.OlimpParser, (), {'err_name': ['all_pars', 'Olimp']}),
+            (vidniy.VidniyParser, (), {'err_name': ['all_pars', 'Vidniy']}),
+
+            (vladimir_sk.VladimirParser, (), {'err_name': ['all_pars', 'VladimirSK']}),
+            (legenda.LegendaParser, (), {'err_name': ['all_pars', 'Legenda']}),
+            (aviator.AviatorParser, (), {'err_name': ['all_pars', 'Aviator']}),
+            (glorax.GloraxParser, (), {'err_name': ['all_pars', 'Glorax']}),
+            # (nmarket.NmarketParser, (), {'headless': False, 'err_name': ['all_pars', 'Nmarket']}),
+        ]
+
+        results: list[dict] = await self.__run_all_parsers(parsers)
+
+        return self.to_exel(results)
+
+
+
+# if __name__ == '__main__':
+#     per = VladimirManager()
+#     asyncio.run(per.run_vladimir_module())
 
