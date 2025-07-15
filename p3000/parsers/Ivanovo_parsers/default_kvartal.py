@@ -47,7 +47,7 @@ class DefaultKvartalParser(BaseParserRequests):
                 self.all_links.append(
                     f'https://pb19650.profitbase.ru/api/v4/json/property?projectIds%5B0%5D=48335&projectIds%5B1%5D=48960&projectIds%5B2%5D=48833&projectIds%5B3%5D=48793&projectIds%5B4%5D=48334&projectIds%5B5%5D=51027&isHouseFinished=0&status%5B0%5D=AVAILABLE&limit=75&offset={75 * idx}&full=true&returnFilteredCount=true'
                 )
-            logger.success('Create All Pars Links)')
+            logger.success('DefaultKvartal; Create All Pars Links)')
         except Exception as ex:
             asyncio.run(self.update_err(error="DefaultKvartalParser: " + str(ex)))
             logger.warning(f'''DefaultKvartal; Invalid pars all_links\nExeption: {ex}\n''')
@@ -145,16 +145,16 @@ class DefaultKvartalParser(BaseParserRequests):
                     except Exception as ex:
                         asyncio.run(self.update_err(error="DefaultKvartalParser: " + str(ex)))
                         logger.warning(f'DefaultKvartal; Invalid item: {str(item)[:100]}...')
-
-            self.floor_count = len(self.result_mass)
         except Exception as ex:
             self._fatal_error = True
             asyncio.run(self.update_err(error="DefaultKvartalParser // Fatal ERROR  -  " + str(ex)))
             logger.error(f'Fatal ERROR DefaultKvartal ->\n{ex}\n\n')
 
+        self.floor_count = len(self.result_mass)
 
-if __name__ == '__main__':
-    per = DefaultKvartalParser(
-        exel=True
-    )
-    per.run()
+
+# if __name__ == '__main__':
+#     per = DefaultKvartalParser(
+#         exel=True
+#     )
+#     per.run()

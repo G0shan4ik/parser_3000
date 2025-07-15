@@ -41,7 +41,7 @@ class OlimpParser(BaseAsyncParserRequests):
             async with self.session.get(url) as response:
                 data = json.loads(await response.text(encoding='utf-8'))
             len_flats = len(data['flats'])
-            logger.info(f"Start pars Olimp; URL == {url}; Count links == {len_flats}")
+            logger.info(f"Olimp; Start pars; URL == {url}; Count links == {len_flats}")
             for flat in data['flats']:
                 await asyncio.sleep(0)
                 try:
@@ -72,17 +72,19 @@ class OlimpParser(BaseAsyncParserRequests):
                     logger.info(
                         f'Olimp; Pars link (https://olimpstroy37.ru/#dp/{self.dct_names[data["projectInfo"]["title"]][0]}/plans?state=plans&flat_id={flat["id"]}); link {data["flats"].index(flat)+1} out of {len_flats}')
                 except Exception as ex:
-                    await self.update_err(error="OlimpParser " + str(ex))
+                    await self.update_err(error="OlimpParser: " + str(ex))
                     logger.warning(
-                        f'Invalid link Olimp: https://olimpstroy37.ru/#dp/{self.dct_names[data["projectInfo"]["title"]][0]}/plans?state=plans&flat_id={flat["id"]}\nExeption: {ex}\n')
+                        f'Olimp; Invalid link: https://olimpstroy37.ru/#dp/{self.dct_names[data["projectInfo"]["title"]][0]}/plans?state=plans&flat_id={flat["id"]}\nExeption: {ex}\n')
         except Exception as ex:
             self._fatal_error = True
             await self.update_err(error="OlimpParser // Fatal ERROR  -  " + str(ex))
             logger.error(f'Fatal ERROR Olimp for url({url}) ->\n{ex}\n\n')
 
+        self.floor_count = len(self.result_mass)
 
-if __name__ == '__main__':
-    per = OlimpParser(
-        exel=True,
-    )
-    asyncio.run(per.run())
+
+# if __name__ == '__main__':
+#     per = OlimpParser(
+#         exel=True,
+#     )
+#     asyncio.run(per.run())

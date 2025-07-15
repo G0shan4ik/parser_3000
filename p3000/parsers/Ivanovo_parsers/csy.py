@@ -74,7 +74,6 @@ class CSYParser(BaseParserRequests):
                     break
                 full_json.extend(_data['objects'])
 
-            self.floor_count = len(full_json)
             for item in full_json:
                 try:
                     if item['status'] != 'available':
@@ -109,9 +108,11 @@ class CSYParser(BaseParserRequests):
             asyncio.run(self.update_err(error="CSYParser // Fatal ERROR  -  " + str(ex)))
             logger.error(f'Fatal ERROR CSY ->\n{ex}\n\n')
 
+        self.floor_count = len(self.result_mass)
 
-if __name__ == '__main__':
-    per = CSYParser(
-        exel=True
-    )
-    per.run()
+
+# if __name__ == '__main__':
+#     per = CSYParser(
+#         exel=True
+#     )
+#     per.run()

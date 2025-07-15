@@ -144,16 +144,16 @@ class KSKHoldingParser(BaseParserSelenium):
             for link in self.__all_links:
                 logger.info(f'KSKHolding; Pars link №{self.__all_links.index(link) + 1} out of {len(self.__all_links)}')
                 self.pars_house(link)
-
-            self.floor_count = len(self.result_mass)
         except Exception as ex:
             self._fatal_error = True
             asyncio.run(self.update_err(error="KSKHoldingParser // Fatal ERROR  -  " + str(ex)))
             logger.error(f'Fatal ERROR KSKHolding ->\n{ex}\n\n')
 
+        self.floor_count = len(self.result_mass)
 
-if __name__ == '__main__':
-    per = KSKHoldingParser(
-        exel=True
-    )
-    per.run()
+
+# if __name__ == '__main__':
+#     per = KSKHoldingParser(
+#         exel=True
+#     )
+#     per.run()

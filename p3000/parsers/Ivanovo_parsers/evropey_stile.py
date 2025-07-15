@@ -4,13 +4,13 @@ from loguru import logger
 from bs4 import BeautifulSoup
 import lxml
 
-from p3000.parsers.base import BaseParserRequests, FlagKey
+from p3000.parsers.base import BaseParserRequests
 
 import requests
 
 
 class EuropeyStileParser(BaseParserRequests):
-    def __init__(self, err_name: FlagKey = 'EuropeyStile', exel: bool = False):
+    def __init__(self, err_name = None, exel: bool = False):
         super().__init__(
             all_links=[
                 'https://европейскийстиль.рф/catalog?filter=eyJzIjpbIm4iXX0%3D&size=l',
@@ -19,7 +19,7 @@ class EuropeyStileParser(BaseParserRequests):
             ],
             site_name='europey_stile',
             exel=exel,
-            err_name=err_name
+            err_name=err_name if err_name else ["single", 'EuropeyStile']
         )
 
         self.__pars_links: list[str] = []
@@ -75,13 +75,12 @@ class EuropeyStileParser(BaseParserRequests):
                 "Вознаграж.": '',
             }
         except Exception as ex:
-            asyncio.run(self.update_err(error="EuropeyStile " + str(ex)))
-            logger.warning(f'''Invalid link EuropeyStile: {link}\nExeption: {ex}\n''')
+            asyncio.run(self.update_err(error="EuropeyStile: " + str(ex)))
+            logger.warning(f'''EuropeyStile; Invalid link: {link}\nExeption: {ex}\n''')
             print(f'!!!!!   ERROR   !!!!!! MINI_LINK ({link})')
 
     def pars_all_data(self) -> None:
         try:
-            logger.info('Start pars EuropeyStile')
             for link in self.all_links:
                 logger.info(
                     f'EuropeyStile; Pars  -PAGE-  ({link}); {self.all_links.index(link) + 1} out of {len(self.all_links)}')
@@ -105,9 +104,11 @@ class EuropeyStileParser(BaseParserRequests):
             asyncio.run(self.update_err(error="EuropeyStile // Fatal ERROR  -  " + str(ex)))
             logger.error(f'Fatal ERROR EuropeyStile ->\n{ex}\n\n')
 
+        self.floor_count = len(self.result_mass)
 
-if __name__ == '__main__':
-    per = EuropeyStileParser(
-        exel=True
-    )
-    per.run()
+
+# if __name__ == '__main__':
+#     per = EuropeyStileParser(
+#         exel=True
+#     )
+#     per.run()

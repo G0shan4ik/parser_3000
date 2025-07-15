@@ -4,9 +4,6 @@ import re
 from loguru import logger
 from bs4 import BeautifulSoup
 import lxml
-from openpyxl.utils.escape import escape
-from pandas.io.formats.excel import ExcelCell
-from pandas.io.stata import excessive_string_length_error
 
 from p3000.parsers.base import BaseParserSelenium
 
@@ -159,10 +156,12 @@ class FenixParser(BaseParserSelenium):
             asyncio.run(self.update_err(error="FenixParser // Fatal ERROR  -  " + str(ex)))
             logger.error(f'Fatal ERROR Fenix ->\n{ex}\n\n')
 
+        self.floor_count = len(self.result_mass)
 
-if __name__ == '__main__':
-    per = FenixParser(
-        exel=True,
-        headless=False
-    )
-    per.run()
+
+# if __name__ == '__main__':
+#     per = FenixParser(
+#         exel=True,
+#         headless=False
+#     )
+#     per.run()

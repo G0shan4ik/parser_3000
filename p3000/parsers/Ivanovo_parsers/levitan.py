@@ -94,16 +94,16 @@ class LevitanParser(BaseParserSelenium):
                     logger.info(f'Levitan; <-- START Pars Link ({link})')
                     self.pars_flat(link)
                     logger.info(f'Levitan; SUCCESS --> Pars Link ({link})')
-
-            self.floor_count = len(self.result_mass)
         except Exception as ex:
             self._fatal_error = True
             asyncio.run(self.update_err(error="LevitanParser // Fatal ERROR  -  " + str(ex)))
             logger.error(f'Fatal ERROR Levitan ->\n{ex}\n\n')
 
+        self.floor_count = len(self.result_mass)
 
-if __name__ == '__main__':
-    per = LevitanParser(
-        exel=True
-    )
-    per.run()
+
+# if __name__ == '__main__':
+#     per = LevitanParser(
+#         exel=True
+#     )
+#     per.run()

@@ -4,13 +4,13 @@ from loguru import logger
 from bs4 import BeautifulSoup
 import lxml
 
-from p3000.parsers.base import BaseParserRequests, FlagKey
+from p3000.parsers.base import BaseParserRequests
 
 from requests import get
 
 
 class VidniyParser(BaseParserRequests):
-    def __init__(self, err_name: FlagKey = 'Vidniy', exel: bool = False):
+    def __init__(self, err_name = None, exel: bool = False):
         super().__init__(
             all_links=[
                 'https://видный37.рф/liter-8.html',
@@ -23,7 +23,7 @@ class VidniyParser(BaseParserRequests):
             ],
             site_name='vidniy',
             exel=exel,
-            err_name=err_name
+            err_name=err_name if err_name else ["single", 'Vidniy']
         )
 
         self.__pars_links: list[str] = []
@@ -73,11 +73,10 @@ class VidniyParser(BaseParserRequests):
                 "Вознаграж.": '',
             }
         except Exception as ex:
-            asyncio.run(self.update_err(error="Vidniy " + str(ex)))
-            logger.warning(f'''Invalid link Vidniy: {link}\nExeption: {ex}\n''')
+            asyncio.run(self.update_err(error="Vidniy: " + str(ex)))
+            logger.warning(f'''Vidniy; Invalid link: {link}\nExeption: {ex}\n''')
 
     def pars_all_data(self) -> None:
-        logger.info('Start pars Vidniy')
         try:
             for link in self.all_links:
                 logger.info(f'Vidniy; Pars  -PAGE-  ({link}); {self.all_links.index(link) + 1} out of {len(self.all_links)}')
@@ -98,9 +97,11 @@ class VidniyParser(BaseParserRequests):
             asyncio.run(self.update_err(error="Vidniy // Fatal ERROR  -  " + str(ex)))
             logger.error(f'Fatal ERROR Vidniy ->\n{ex}\n\n')
 
+        self.floor_count = len(self.result_mass)
 
-if __name__ == '__main__':
-    per = VidniyParser(
-        exel=True
-    )
-    per.run()
+
+# if __name__ == '__main__':
+#     per = VidniyParser(
+#         exel=True
+#     )
+#     per.run()
