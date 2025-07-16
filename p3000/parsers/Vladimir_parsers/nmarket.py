@@ -98,7 +98,7 @@ class NmarketParser(BaseParserSelenium):
                             "Отд.": row.select_one('td:nth-child(7)').text.strip(),
                             "С/у": self.num(row.select_one('td:nth-child(8)').text),
                             "Балкон": row.select_one('td:nth-child(9)').text.strip(),
-                            "Этаж": row.select_one('td:nth-child(10)').text.strip(),
+                            "Этаж": row.select_one('td:nth-child(10)').text.strip().replace(' ', ''),
                             "№ объекта": int(row.select_one('td:nth-child(11)').text.strip()),
                             "ЖК, оч. и корп.": row.select_one('td:nth-child(12)').text.strip(),
                             "Продавец": row.select_one('td:nth-child(13)').text.strip(),
