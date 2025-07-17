@@ -1,6 +1,12 @@
 poetry.lock
 test.py
 
+p3000/parsers/all_exel
+p3000/parsers/Ivanovo_parsers/all_exel
+p3000/parsers/Vladimir_parsers/all_exel
+p3000/parsers/Ivanovo_parsers/__flags.json
+p3000/parsers/Vladimir_parsers/__flags.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
