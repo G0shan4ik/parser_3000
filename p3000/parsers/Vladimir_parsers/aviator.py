@@ -10,7 +10,7 @@ from requests import get
 
 
 class AviatorParser(BaseParserRequests):
-    def __init__(self, err_name = None, exel: bool = False):
+    def __init__(self, err_name = None, exel: bool = False, single: bool = False):
         super().__init__(
             all_links=[
                 'https://kvartal-aviator.ru/kupit-kvartiru-v-kovrove/studii/',
@@ -26,7 +26,8 @@ class AviatorParser(BaseParserRequests):
             ],
             site_name='aviator',
             exel=exel,
-            err_name=err_name if err_name else ["single", 'Aviator']
+            err_name=err_name if err_name else ["single", 'Aviator'],
+            single=single
         )
 
         self.__pars_links: list[str] = []
@@ -121,8 +122,12 @@ class AviatorParser(BaseParserRequests):
                     )
 
                 except Exception as ex:
-                    asyncio.run(self.update_err(error="AviatorParser: " + str(ex)))
-                    logger.warning(f'''Invalid link Aviator: {item}\nExeption: {ex}\n''')
+                    if 'ЗНАЧ' in str(ex):
+                        logger.info(
+                            f'Aviator; Link  -S O L D   O U T-  ({self.__pars_links.index(item) + 1} out of {len(self.__pars_links)})\n{item}')
+                    else:
+                        asyncio.run(self.update_err(error="AviatorParser: " + str(ex)))
+                        logger.warning(f'''Invalid link Aviator: {item}\nExeption: {ex}\n''')
         except Exception as ex:
             self._fatal_error = True
             asyncio.run(self.update_err(error="AviatorParser // Fatal ERROR  -  " + str(ex)))
@@ -131,8 +136,8 @@ class AviatorParser(BaseParserRequests):
         self.floor_count = len(self.result_mass)
 
 
-# if __name__ == '__main__':
-#     per = AviatorParser(
-#         exel=True
-#     )
-#     per.run()
+if __name__ == '__main__':
+    per = AviatorParser(
+        exel=True
+    )
+    per.run()

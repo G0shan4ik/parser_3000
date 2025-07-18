@@ -8,7 +8,7 @@ from p3000.parsers.base import BaseParserSelenium
 
 
 class LegendaParser(BaseParserSelenium):
-    def __init__(self, err_name = None, headless: bool = True, retry_count: int = 3, exel: bool = False):
+    def __init__(self, err_name = None, headless: bool = True, retry_count: int = 3, exel: bool = False, single: bool = False):
         super().__init__(
             start_url=[
                 'https://legendakovrova.ru/',
@@ -18,7 +18,8 @@ class LegendaParser(BaseParserSelenium):
             headless=headless,
             retry_count=retry_count,
             exel=exel,
-            err_name=err_name if err_name else ["single", 'Legenda']
+            err_name=err_name if err_name else ["single", 'Legenda'],
+            single=single
         )
 
         self.driver = None

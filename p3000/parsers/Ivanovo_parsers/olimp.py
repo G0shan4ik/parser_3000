@@ -9,7 +9,7 @@ import asyncio
 
 
 class OlimpParser(BaseAsyncParserRequests):
-    def __init__(self, err_name = None, exel: bool = False):
+    def __init__(self, err_name = None, exel: bool = False, single: bool = False):
         super().__init__(
             all_links=[
                 'https://domoplaner.ru/widget-api/widget/418-toSOJO/',
@@ -18,7 +18,8 @@ class OlimpParser(BaseAsyncParserRequests):
             ],
             site_name='olimp',
             exel=exel,
-            err_name=err_name if err_name else ["single", 'Olimp']
+            err_name=err_name if err_name else ["single", 'Olimp'],
+            single=single
         )
 
         self.session = None

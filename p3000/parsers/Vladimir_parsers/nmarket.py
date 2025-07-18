@@ -8,14 +8,15 @@ from p3000.parsers.base import BaseParserSelenium
 
 
 class NmarketParser(BaseParserSelenium):
-    def __init__(self, err_name = None, headless: bool = True, retry_count: int = 3, exel: bool = False):
+    def __init__(self, err_name = None, headless: bool = True, retry_count: int = 3, exel: bool = False, single: bool = False):
         super().__init__(
             start_url='https://auth.nmarket.pro/Account/Login',
             site_name='nmarket',
             headless=headless,
             retry_count=retry_count,
             exel=exel,
-            err_name=err_name if err_name else ["single", 'Nmarket']
+            err_name=err_name if err_name else ["single", 'Nmarket'],
+            single=single
         )
 
         self.cnt: int = 0
@@ -23,6 +24,8 @@ class NmarketParser(BaseParserSelenium):
 
         self.fl_cnt: int = -1
         self.iter_count: int = 0
+
+        self.__cnt_glorax = 0
 
     @staticmethod
     def num(s) -> str | int | float:
@@ -59,10 +62,10 @@ class NmarketParser(BaseParserSelenium):
                         self.driver.reload()
                         self.driver.sleep(3)
                         continue
-                    logger.info(f"Nmarket; ALL floor_count == {self.fl_cnt}")
                 except:
                     self.iter_count += 1
                     logger.warning(f'Nmarket; Authorise error; Start next iteration (iter count == {self.iter_count})')
+
             self.driver.reload()
             self.driver.sleep(3)
             self.driver.scroll()
@@ -72,7 +75,13 @@ class NmarketParser(BaseParserSelenium):
             self.driver.wait_for_element('div.pagination.ng-star-inserted', wait=10)
             soup = BeautifulSoup(self.driver.page_html, 'lxml')
             all_pages = int(soup.select_one('div.pagination.ng-star-inserted').select('div.ng-star-inserted')[-2].text)
+
+            if self.fl_cnt == -1 or self.fl_cnt == 0:
+                self.fl_cnt = int(soup.select_one('div.search-result-counter').text.split(' - ')[-1].replace('\xa0', ''))
+
+            logger.info(f"Nmarket; ALL floor_count == {self.fl_cnt}")
             logger.info(f"Nmarket; ALL pages == {all_pages}")
+
             if all_pages > 7000:
                 self._fatal_error = True
                 logger.error(f"Nmarket; The site is not working property")
@@ -90,6 +99,10 @@ class NmarketParser(BaseParserSelenium):
                     soup = BeautifulSoup(self.driver.page_html, 'lxml')
                     dct = {}
                     for row in soup.select('tr.apartment-grid__table-tr'):
+                        if 'Glorax' in row.select_one('td:nth-child(12)').text.strip():
+                            logger.info('Nmarket; skip Glorax')
+                            self.__cnt_glorax += 1
+                            continue
                         dct = {
                             "Тип": row.select_one('td:nth-child(2)').text,
                             "S общ": self.num(row.select_one('td:nth-child(4)').text),
@@ -129,7 +142,9 @@ class NmarketParser(BaseParserSelenium):
             self._fatal_error = True
             logger.error(f'Fatal ERROR Nmarket ->\n{ex}\n\n')
 
-        self.floor_count = len(self.result_mass)
+        logger.info(f'Nmarket; Glorax flats coutn == {self.__cnt_glorax}')
+
+        self.floor_count = len(self.result_mass) + self.__cnt_glorax
 
 
 # if __name__ == '__main__':

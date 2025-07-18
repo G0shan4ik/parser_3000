@@ -10,7 +10,7 @@ from requests import get
 
 
 class VidniyParser(BaseParserRequests):
-    def __init__(self, err_name = None, exel: bool = False):
+    def __init__(self, err_name = None, exel: bool = False, single: bool = False):
         super().__init__(
             all_links=[
                 'https://видный37.рф/liter-8.html',
@@ -23,7 +23,8 @@ class VidniyParser(BaseParserRequests):
             ],
             site_name='vidniy',
             exel=exel,
-            err_name=err_name if err_name else ["single", 'Vidniy']
+            err_name=err_name if err_name else ["single", 'Vidniy'],
+            single=single
         )
 
         self.__pars_links: list[str] = []

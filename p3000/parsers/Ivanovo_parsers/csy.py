@@ -8,12 +8,13 @@ from requests import post
 
 
 class CSYParser(BaseParserRequests):
-    def __init__(self, err_name = None, exel: bool = False):
+    def __init__(self, err_name = None, exel: bool = False, single: bool = False):
         super().__init__(
             all_links='',
             site_name='csy',
             exel=exel,
-            err_name=err_name if err_name else ["single", 'CSY']
+            err_name=err_name if err_name else ["single", 'CSY'],
+            single=single
         )
 
         self.headers = {

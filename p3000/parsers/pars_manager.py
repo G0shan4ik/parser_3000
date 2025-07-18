@@ -13,14 +13,8 @@ from .Vladimir_parsers import vladimir_sk, legenda, aviator, glorax, nmarket
 from .Ivanovo_parsers import csy, default_kvartal, evropey_stile, fenix, ksk_holding, levitan, olimp, vidniy
 
 
-ParserInitDef = Union[
-    Any,
-    Tuple[Type, list, dict]
-]
-
-
 class BaseManager:
-    def __init__(self, module_name: str, batch_size: int = 4):
+    def __init__(self, module_name: str, batch_size: int = 3):
         self.module_name = module_name
         self.batch_size = batch_size
 
@@ -37,7 +31,7 @@ class BaseManager:
         for i in range(0, len(lst), n):
             yield lst[i:i + n]
 
-    async def __run_all_parsers(self, parser_definitions):
+    async def _run_all_parsers(self, parser_definitions):
         loop = asyncio.get_running_loop()
         self.executor = getattr(self, "executor", ThreadPoolExecutor())
 
@@ -85,7 +79,7 @@ class BaseManager:
 
 
 class IvanovoManager(BaseManager):
-    def __init__(self, batch_size: int = 4):
+    def __init__(self, batch_size: int = 2):
         super().__init__(
             module_name='Ivanovo',
             batch_size=batch_size
@@ -103,7 +97,7 @@ class IvanovoManager(BaseManager):
             (vidniy.VidniyParser, (), {'err_name': ['ivan', 'Vidniy']}),
         ]
 
-        results: list[dict] = await self.__run_all_parsers(parsers)
+        results: list[dict] = await self._run_all_parsers(parsers)
 
         return self.to_exel(results)
 
@@ -124,7 +118,7 @@ class VladimirManager(BaseManager):
             # (nmarket.NmarketParser, (), {'headless': False, 'err_name': ['vladimir', 'Nmarket']}),
         ]
 
-        results: list[dict] = await self.__run_all_parsers(parsers)
+        results: list[dict] = await self._run_all_parsers(parsers)
 
         return self.to_exel(results)
 
@@ -154,13 +148,14 @@ class AllParsManager(BaseManager):
             # (nmarket.NmarketParser, (), {'headless': False, 'err_name': ['all_pars', 'Nmarket']}),
         ]
 
-        results: list[dict] = await self.__run_all_parsers(parsers)
+        results: list[dict] = await self._run_all_parsers(parsers)
 
         return self.to_exel(results)
 
 
 
-# if __name__ == '__main__':
-#     per = VladimirManager()
-#     asyncio.run(per.run_vladimir_module())
+if __name__ == '__main__':
+    per1 = VladimirManager()
+    per2 = IvanovoManager()
+    asyncio.run(per1.run_vladimir_module())
 

@@ -10,14 +10,15 @@ from requests import get
 
 
 class LevitanParser(BaseParserSelenium):
-    def __init__(self, err_name = None, headless: bool = True, retry_count: int = 3, exel: bool = False):
+    def __init__(self, err_name = None, headless: bool = True, retry_count: int = 3, exel: bool = False, single: bool = False):
         super().__init__(
             start_url='https://жк-левитан.рф/apartments/',
             site_name='levitan',
             headless=headless,
             retry_count=retry_count,
             exel=exel,
-            err_name=err_name if err_name else ["single", 'Levitan']
+            err_name=err_name if err_name else ["single", 'Levitan'],
+            single=single
         )
 
         self.driver = None

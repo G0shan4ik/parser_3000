@@ -11,14 +11,15 @@ from p3000.parsers.base import BaseAsyncParserRequests
 
 
 class GloraxParser(BaseAsyncParserRequests):
-    def __init__(self, err_name = None, exel: bool = False):
+    def __init__(self, err_name = None, exel: bool = False, single: bool = False):
         super().__init__(
             all_links=[
                 'https://glorax.com/flats?city=7&project=74&area_min=29.07&area_max=77.64&order=price',
             ],
             site_name='glorax',
             exel=exel,
-            err_name=err_name if err_name else ["single", 'Glorax']
+            err_name=err_name if err_name else ["single", 'Glorax'],
+            single=single
         )
 
         self.session = None

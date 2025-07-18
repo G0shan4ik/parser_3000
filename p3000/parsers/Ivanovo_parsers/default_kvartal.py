@@ -10,12 +10,13 @@ import requests
 
 
 class DefaultKvartalParser(BaseParserRequests):
-    def __init__(self, err_name = None, exel: bool = False):
+    def __init__(self, err_name = None, exel: bool = False, single: bool = False):
         super().__init__(
             all_links=[''],
             site_name='default_kvartal',
             exel=exel,
-            err_name=err_name if err_name else ["single", 'DefaultKvartal']
+            err_name=err_name if err_name else ["single", 'DefaultKvartal'],
+            single=single
         )
 
         self.headers_1 = {
@@ -96,7 +97,8 @@ class DefaultKvartalParser(BaseParserRequests):
                         )
                         full_json.append(response_2.json())
                     except Exception as ex:
-                        asyncio.run(self.update_err(error="DefaultKvartalParser: " + str(ex)))
+                        if _url :
+                            asyncio.run(self.update_err(error="DefaultKvartalParser: " + str(ex)))
                         logger.warning(f'DefaultKvartal/JSON; Invalid url: {_url}')
 
             for one_json in full_json:
@@ -155,6 +157,6 @@ class DefaultKvartalParser(BaseParserRequests):
 
 # if __name__ == '__main__':
 #     per = DefaultKvartalParser(
-#         exel=True
+#         exel=True,
 #     )
 #     per.run()

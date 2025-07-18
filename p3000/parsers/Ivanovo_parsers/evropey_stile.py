@@ -10,7 +10,7 @@ import requests
 
 
 class EuropeyStileParser(BaseParserRequests):
-    def __init__(self, err_name = None, exel: bool = False):
+    def __init__(self, err_name = None, exel: bool = False, single: bool = False):
         super().__init__(
             all_links=[
                 'https://европейскийстиль.рф/catalog?filter=eyJzIjpbIm4iXX0%3D&size=l',
@@ -19,7 +19,8 @@ class EuropeyStileParser(BaseParserRequests):
             ],
             site_name='europey_stile',
             exel=exel,
-            err_name=err_name if err_name else ["single", 'EuropeyStile']
+            err_name=err_name if err_name else ["single", 'EuropeyStile'],
+            single=single
         )
 
         self.__pars_links: list[str] = []

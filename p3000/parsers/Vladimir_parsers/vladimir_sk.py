@@ -10,7 +10,7 @@ from requests import get
 
 
 class VladimirParser(BaseAsyncParserRequests):
-    def __init__(self, err_name = None, exel: bool = False):
+    def __init__(self, err_name = None, exel: bool = False, single: bool = False):
         super().__init__(
             all_links=[
                 'https://vladimir.sk-continent.ru/api/v1/property/properties/?type=0&page=1&page_size=1',
@@ -18,7 +18,8 @@ class VladimirParser(BaseAsyncParserRequests):
             ],
             site_name='vladimir_sk',
             exel=exel,
-            err_name=err_name if err_name else ["single", 'VladimirSK']
+            err_name=err_name if err_name else ["single", 'VladimirSK'],
+            single=single
         )
 
         self.session = None
@@ -119,7 +120,8 @@ class VladimirParser(BaseAsyncParserRequests):
 
 
                 except Exception as ex:
-                    await self.update_err(error="VladimirParser: " + str(ex))
+                    if 'совмещенный, 1 раздельный' not in str(ex):
+                        await self.update_err(error="VladimirParser: " + str(ex))
                     logger.warning(
                         f'''VladimirSK; Invalid link: {f'https://vladimir.sk-continent.ru{item["absolute_url"]}'}\nExeption: {ex}\n''')
         except Exception as ex:
@@ -130,8 +132,8 @@ class VladimirParser(BaseAsyncParserRequests):
         self.floor_count = len(self.result_mass)
 
 
-# if __name__ == '__main__':
-#     per = VladimirParser(
-#         exel=True
-#     )
-#     asyncio.run(per.run())
+if __name__ == '__main__':
+    per = VladimirParser(
+        exel=True
+    )
+    asyncio.run(per.run())

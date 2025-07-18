@@ -10,14 +10,15 @@ from requests import get
 
 
 class KSKHoldingParser(BaseParserSelenium):
-    def __init__(self, err_name = None, headless: bool = True, retry_count: int = 3, exel: bool = False):
+    def __init__(self, err_name = None, headless: bool = True, retry_count: int = 3, exel: bool = False, single: bool = False):
         super().__init__(
             start_url='https://www.ivksk.ru/nedv/',
             site_name='ksk_holding',
             headless=headless,
             retry_count=retry_count,
             exel=exel,
-            err_name=err_name if err_name else ["single", 'KSKHolding']
+            err_name=err_name if err_name else ["single", 'KSKHolding'],
+            single=single
         )
 
         self.__all_links: list[str] = []

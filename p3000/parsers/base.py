@@ -40,15 +40,16 @@ class BaseModel:
             value=dct_err
         )
 
-    def to_exel(self, mass: list[dict]) -> None:
+    def to_exel(self, mass: list[dict], exel_name: str) -> None:
         df = pd.DataFrame(mass)
-        df.to_excel(f"all_exel/{datetime.now().date()}_{self.site_name}.xlsx")
+
+        df.to_excel(exel_name)
 
         logger.success(f'{self.site_name.upper()}; <-- Success created file (name -> {self.site_name})')
 
 
 class BaseParserSelenium(ABC, BaseModel):
-    def __init__(self, start_url: str|list[str], site_name: str, err_name: [FlagKey], headless: bool, retry_count: int, exel: bool):
+    def __init__(self, start_url: str|list[str], site_name: str, err_name: [FlagKey], headless: bool, retry_count: int, exel: bool, single: bool):
         super().__init__(
             site_name=site_name,
             err_name=err_name
@@ -63,13 +64,17 @@ class BaseParserSelenium(ABC, BaseModel):
 
         self.floor_count: int = 0
 
+        self.single = single
+
         self._fatal_error: bool = False
 
     @abstractmethod
     def pars_all_data(self) -> None:
         ...
 
-    def run(self) -> list[list[dict] | int]:
+    def run(self, *args) -> list[str | bool] | list[dict]:
+        _exel_name = f"all_exel/{datetime.now().date()}_{self.site_name}.xlsx"
+
         @browser(
             user_agent=UserAgent.user_agent_98,
             add_arguments=['--disable-dev-shm-usage', '--no-sandbox'],
@@ -87,14 +92,18 @@ class BaseParserSelenium(ABC, BaseModel):
             else: logger.warning(f'{self.site_name.upper()}; FINISH pars; All_Items == {self.floor_count} --->')
 
             if self.exel and not self._fatal_error:
-                self.to_exel(mass=self.result_mass)
+                self.to_exel(mass=self.result_mass, exel_name=_exel_name)
 
         run_parser(data="https://www.google.com/")
-        return [self.result_mass, self.floor_count]
+
+        if self.single:
+            return [_exel_name, True if self.exel and not self._fatal_error else False]
+
+        return self.result_mass
 
 
 class BaseParserRequests(ABC, BaseModel):
-    def __init__(self, all_links: list[str] | str, site_name: str, err_name: [FlagKey], exel: bool):
+    def __init__(self, all_links: list[str] | str, site_name: str, err_name: [FlagKey], exel: bool, single: bool):
         super().__init__(
             site_name=site_name,
             err_name=err_name
@@ -107,13 +116,17 @@ class BaseParserRequests(ABC, BaseModel):
         self.result_mass: list[dict] = []
         self.floor_count: int = 0
 
+        self.single = single
+
         self._fatal_error: bool = False
 
     @abstractmethod
     def pars_all_data(self) -> None:
         ...
 
-    def run(self) -> list[list[dict] | int]:
+    def run(self, *args) -> list[str | bool] | list[dict]:
+        _exel_name = f"all_exel/{datetime.now().date()}_{self.site_name}.xlsx"
+
         logger.success(f'{self.site_name.upper()}; START pars {self.site_name.upper()} --->')
 
         self.pars_all_data()
@@ -123,13 +136,16 @@ class BaseParserRequests(ABC, BaseModel):
         else: logger.warning(f'{self.site_name.upper()}; FINISH pars; All_Items == {self.floor_count} --->')
 
         if self.exel and not self._fatal_error:
-            self.to_exel(mass=self.result_mass)
+            self.to_exel(mass=self.result_mass, exel_name=_exel_name)
 
-        return [self.result_mass, self.floor_count]
+        if self.single:
+            return [_exel_name, True if self.exel and not self._fatal_error else False]
+
+        return self.result_mass
 
 
 class BaseAsyncParserRequests(ABC, BaseModel):
-    def __init__(self, all_links: list[str] | str, site_name: str, err_name: [FlagKey], exel: bool):
+    def __init__(self, all_links: list[str] | str, site_name: str, err_name: [FlagKey], exel: bool, single: bool):
         super().__init__(
             site_name=site_name,
             err_name=err_name
@@ -145,6 +161,8 @@ class BaseAsyncParserRequests(ABC, BaseModel):
 
         self.floor_count: int = 0
 
+        self.single = single
+
         self._fatal_error: bool = False
 
     @abstractmethod
@@ -159,7 +177,9 @@ class BaseAsyncParserRequests(ABC, BaseModel):
     async def pars_all_data(self, url: str|None) -> None:
         ...
 
-    async def run(self) -> list[list[dict] | int]:
+    async def run(self, *args) -> list[str | bool] | list[dict]:
+        _exel_name = f"all_exel/{datetime.now().date()}_{self.site_name}.xlsx"
+
         logger.success(f'{self.site_name.upper()}; START pars {self.site_name.upper()} --->')
 
         await self.init_session()
@@ -180,9 +200,12 @@ class BaseAsyncParserRequests(ABC, BaseModel):
         logger.info(f"{self.site_name.upper()}; CLOSE Async Session")
 
         if self.exel and not self._fatal_error:
-            self.to_exel(mass=self.result_mass)
+            self.to_exel(mass=self.result_mass, exel_name=_exel_name)
 
-        return [self.result_mass, self.floor_count]
+        if self.single:
+            return [_exel_name, True if self.exel and not self._fatal_error else False]
+
+        return self.result_mass
 
     @staticmethod
     def chunks(lst, n):
