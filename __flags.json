@@ -3,25 +3,21 @@
         "bool": false,
         "minutes": 0,
         "seconds": 0,
-        "state": "disabled"
+        "state": "disabled",
+        "errors": {}
     },
     "vladimir": {
         "bool": false,
         "minutes": 0,
         "seconds": 0,
-        "state": "disabled"
+        "state": "disabled",
+        "errors": {}
     },
     "all_pars": {
         "bool": false,
         "minutes": 0,
         "seconds": 0,
-        "state": "disabled"
-    },
-    "single": {
-        "parser_name": "",
-        "bool": false,
-        "minutes": 0,
-        "seconds": 0,
-        "state": "disabled"
+        "state": "disabled",
+        "errors": {}
     }
 }
