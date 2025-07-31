@@ -79,7 +79,7 @@ class BaseManager:
 
 
 class IvanovoManager(BaseManager):
-    def __init__(self, batch_size: int = 2):
+    def __init__(self, batch_size: int = 3):
         super().__init__(
             module_name='Ivanovo',
             batch_size=batch_size
@@ -87,13 +87,13 @@ class IvanovoManager(BaseManager):
 
     async def run_ivanovo_module(self):
         parsers = [
-            (fenix.FenixParser, (), {'headless': False, 'err_name': ['ivan', 'Fenix']}),
             (csy.CSYParser, (), {'err_name': ['ivan', 'CSY']}),
             (default_kvartal.DefaultKvartalParser, (), {'err_name': ['ivan', 'DefaultKvartal']}),
             (evropey_stile.EuropeyStileParser, (), {'err_name': ['ivan', 'EuropeyStile']}),
             (ksk_holding.KSKHoldingParser, (), {'err_name': ['ivan', 'KSK_Holding']}),
             (levitan.LevitanParser, (), {'err_name': ['ivan', 'Levitan']}),
             (olimp.OlimpParser, (), {'err_name': ['ivan', 'Olimp']}),
+            (fenix.FenixParser, (), {'headless': False, 'err_name': ['ivan', 'Fenix']}),
             (vidniy.VidniyParser, (), {'err_name': ['ivan', 'Vidniy']}),
         ]
 
@@ -103,7 +103,7 @@ class IvanovoManager(BaseManager):
 
 
 class VladimirManager(BaseManager):
-    def __init__(self, batch_size: int = 4):
+    def __init__(self, batch_size: int = 2):
         super().__init__(
             module_name='Vladimir',
             batch_size=batch_size
@@ -115,7 +115,7 @@ class VladimirManager(BaseManager):
             (legenda.LegendaParser, (), {'err_name': ['vladimir', 'Legenda']}),
             (aviator.AviatorParser, (), {'err_name': ['vladimir', 'Aviator']}),
             (glorax.GloraxParser, (), {'err_name': ['vladimir', 'Glorax']}),
-            # (nmarket.NmarketParser, (), {'headless': False, 'err_name': ['vladimir', 'Nmarket']}),
+            (nmarket.NmarketParser, (), {'headless': False, 'err_name': ['vladimir', 'Nmarket']}),
         ]
 
         results: list[dict] = await self._run_all_parsers(parsers)

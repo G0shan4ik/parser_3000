@@ -138,12 +138,12 @@ class FenixParser(BaseParserSelenium):
                                     }
                                 )
                                 logger.info(
-                                    f'Fenix; Succes pars item (Section-{cnt_entrance}, Row-{cnt_row}, Item-{cnt_item})')
+                                    f'Fenix; Succes pars item {self.__all_links.index(url) + 1} out of {len(self.__all_links)} (Section-{cnt_entrance}, Row-{cnt_row}, Item-{cnt_item})')
                                 self.driver.wait_for_element('div.object-modal__close-button')
                                 self.driver.click('div.object-modal__close-button')
                             except Exception as ex:
                                 asyncio.run(self.update_err(error="FenixParser: " + str(ex)))
-                                logger.warning(f'Fenix/Card; !Flag! Invalid pars URL (URL - {url})')
+                                logger.warning(f'Fenix/Card; !Flag! Invalid pars item {self.__all_links.index(url) + 1} out of {len(self.__all_links)} (URL - {url})')
         except Exception as ex:
             asyncio.run(self.update_err(error="FenixParser: " + str(ex)))
             logger.warning(f'Fenix; Invalid pars URL (URL - {url})')
