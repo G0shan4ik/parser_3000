@@ -91,8 +91,16 @@ class KSKHoldingParser(BaseParserSelenium):
             elif '"Альфа Центавра"' in gk:
                 gk = 'ЖК "Альфа Центавра"'
 
+            _room = room.replace('K', 'К')
+
+            if 'Дельта Центавра' in gk:
+                if 88.8 <= float(area) <= 119.15:
+                    _room = '2К'
+                elif 119.15 < float(area):
+                    _room = '3К'
+
             return {
-                "Тип": room.replace('K', 'К'),
+                "Тип": _room,
                 "S общ": area,
                 "S жил": '-',
                 "S кухни": '-',
