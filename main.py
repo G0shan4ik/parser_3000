@@ -10,19 +10,19 @@ async def on_startup(dispatcher):
     logger.success(f"Bot{' ('+BOT_URL+')' if BOT_URL else ''} is running!")
 
 async def on_shutdown(dispatcher):
-    # fl = FlagsManager()
-    # flags_json: dict = await fl.read_all_flags()
-    # for key, value in flags_json.items():
-    #     await fl.update_full_flag(
-    #         key=key,
-    #         new_data={
-    #             "bool": False,
-    #             "minutes": 0,
-    #             "seconds": 0,
-    #             "state": "disabled",
-    #             "errors": {}
-    #         }
-    #     )
+    fl = FlagsManager()
+    flags_json: dict = await fl.read_all_flags()
+    for key, value in flags_json.items():
+        await fl.update_full_flag(
+            key=key,
+            new_data={
+                "bool": False,
+                "minutes": 0,
+                "seconds": 0,
+                "state": "disabled",
+                "errors": {}
+            }
+        )
     logger.success('The bot is stopped; __flags.json has been cleared!')
 
 async def main() -> None:

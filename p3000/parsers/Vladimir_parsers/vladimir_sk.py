@@ -13,8 +13,11 @@ class VladimirParser(BaseAsyncParserRequests):
     def __init__(self, err_name = None, exel: bool = False, single: bool = False):
         super().__init__(
             all_links=[
-                'https://vladimir.sk-continent.ru/api/v1/property/properties/?type=0&page=1&page_size=1',
-                'https://www.sk-continent.ru/api/v1/property/properties/?type=0&page=1&page_size=1'
+                'https://www.sk-continent.ru/api/v1/property/properties/?page=1&page_size=10000&type=0',  # good link
+                'https://vladimir.sk-continent.ru/api/v1/property/properties/?page=1&page_size=10000&type=0',  # good link
+                # 'https://vladimir.sk-continent.ru/api/v1/property/properties/?type=0&page=1&page_size=10000',
+                # 'https://www.sk-continent.ru/api/v1/property/properties/?type=0&page=1&page_size=1',
+                # 'https://www.sk-continent.ru/api/v1/property/properties/?type=0&project=12345&page=1&page_size=10000'
             ],
             site_name='vladimir_sk',
             exel=exel,
@@ -34,6 +37,7 @@ class VladimirParser(BaseAsyncParserRequests):
         self.__facing_pattern = {
             "Строительная": "П/Чист",
             "Черновая отделка": "Черн",
+            'White Box (предчистовая)': 'П/Чист',
             "": "",
         }
         self.__S_Y = {
@@ -74,7 +78,7 @@ class VladimirParser(BaseAsyncParserRequests):
             pagination: int = get(url=url).json()['count']
             self.floor_count += pagination
 
-            url = f'{url[:-1]}{pagination}'
+            # url = f'{url[:-1]}{pagination}'
 
             async with self.session.get(url) as response:
                 data = await response.json()
@@ -95,6 +99,12 @@ class VladimirParser(BaseAsyncParserRequests):
                     except:
                         price_100 = self.num(item["price"].replace('.00', ''))
                     if item['status'] == 'AVAILABLE':
+
+                        gk_name = 'ЖК Маршал' if 'ЖК Маршал' in item['project_title'] else item['project_title']
+                        if 'Микрорайон Славный' in gk_name or 'VERIZINO life' in gk_name:
+                            gk_name = "Еловая, 82" if 'ЖК Маршал' in item['project_title'] else item['house']
+
+
                         self.result_mass.append(
                             {
                                 "Тип": self.__rooms_pattern[item['rooms_count']],
@@ -104,11 +114,11 @@ class VladimirParser(BaseAsyncParserRequests):
                                 "Отд.": self.__facing_pattern[item["facing"]],
                                 "С/у": await self.return_s_y(f'{domain}{item["absolute_url"]}'),
                                 "Балкон": "-",
-                                "Этаж": item['floor_of'],
+                                "Этаж": int(item['floor_of'].split('/')[0]),
                                 "№ объекта": int(item['id']),
-                                "ЖК, оч. и корп.": item['house'],
-                                "Продавец": item['project_title'],
-                                "Район": "-",
+                                "ЖК, оч. и корп.": gk_name,
+                                "Продавец": 'СЗ СК КОНТИНЕНТ ЮЗ' if 'ЖК Маршал' in item['project_title'] else f'Континент, {"Владимир" if "vladimir" in url else "Ковров"}',
+                                "Район": "Еловая, 82" if 'ЖК Маршал' in item['project_title'] else item['house'],
                                 "Сдача": item["development_quarter"].replace('квартал', 'кв.'),
                                 "Цена 100%": price_100,
                                 "за м2": self.num(price_100 / self.num(item['area'].replace(' м²', ''))),

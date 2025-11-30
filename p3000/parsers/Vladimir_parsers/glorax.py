@@ -1,5 +1,4 @@
 import asyncio
-from typing import Awaitable
 
 from loguru import logger
 
@@ -14,7 +13,7 @@ class GloraxParser(BaseAsyncParserRequests):
     def __init__(self, err_name = None, exel: bool = False, single: bool = False):
         super().__init__(
             all_links=[
-                'https://glorax.com/flats?city=7&project=74&area_min=29.07&area_max=77.64&order=price',
+                'https://glorax.com/flats?project=glorax-oktiabrskii&order=price'
             ],
             site_name='glorax',
             exel=exel,
@@ -38,24 +37,16 @@ class GloraxParser(BaseAsyncParserRequests):
         self.session = None
 
     @staticmethod
-    def get_pretty_data_1(sp) -> dict:
-        dct = dict()
-        for item in sp.select_one('div.column_fpjNO._desktop_6P5R7').select('div'):
-            data = item.select('span')
-            if 'LotBottomArea' in str(item):
-                for new_item in item.select('div.area_5M9Eq'):
-                    dt = new_item.select_one('span.t5').text.replace('\n', '').replace('м2', '').strip()
-                    if 'м2' in new_item.select_one('span.t5').text:
-                        dt = float(
-                            new_item.select_one('span.t5').text.replace('\n', '').replace('м2', '').replace(',',
-                                                                                                            '.').strip())
-                    dct[new_item.select_one('span.l6').text] = dt
-                continue
-            try:
-                dct[data[0].text] = data[1].text.replace('\n', '').replace('м2', '').replace(',', '.').strip()
-            except:
-                break
-        return dct
+    def extract_living_area(text: str) -> int|float:
+        try:
+            from bs4 import BeautifulSoup
+            import lxml
+
+            soup = BeautifulSoup(text, 'lxml')
+            res = float(soup.select_one('div.LotCharacteristics_livingSquare__viR_f').text.replace('Жилая площадь', '').split(' ')[0].replace(',', '.'))
+            return res
+        except:
+            return 0
 
     async def init_session(self):
         self.playwright = await async_playwright().start()
@@ -75,10 +66,10 @@ class GloraxParser(BaseAsyncParserRequests):
         if self.playwright:
             await self.playwright.stop()
 
-    async def pars_links(self) -> list[list]:
+    async def pars_links(self) -> None:
         try:
             logger.info('Glorax; Start pars all Glorax pars_links')
-            lim, offset, result = 21, 0, []
+            page = 1
             headers = {
                 'referer': 'https://glorax.com/flats?city=7&project=74&area_min=29.07&area_max=77.64&price_min=4009998.9975&price_max=10349999.0025&floor_min=2&floor_max=15&order=price',
                 'sec-ch-ua': '"Not A(Brand";v="8", "Chromium";v="132", "YaBrowser";v="25.2", "Yowser";v="2.5"',
@@ -90,89 +81,57 @@ class GloraxParser(BaseAsyncParserRequests):
                 'accept-language': 'ru,en;q=0.9'
             }
             while True:
+                logger.info(
+                    f'''Glorax pars page {page}''')
                 response = await (await self.session.request.get(
-                    url=f'https://glorax.com/api/flats/?limit={lim}&offset={offset}&booked=false&city=7&project=74&area_min=29.07&area_max=77.64&price_min=4009998.9975&price_max=10349999.0025&floor_min=2&floor_max=15&order=price',
+                    url=f'https://glorax-api-dev.city-digital.ru/api/v1/filter/lots?page={page}&perPage=15&order=price&filter[type]=flat&filter[project]=glorax-oktiabrskii&filter[withReserved]=false',
                     headers=headers
                 )).json()
-                if len(response['results']) < 1:
+
+                if page > 30:
                     break
-                offset += lim
-                for item in response['results']:
-                    result.append(
-                        [
-                            f'https://glorax.com/flats/{item["id"]}',
-                            item["price"],
-                            item["furnish_display"],
-                            f'{item["completion_quarter"]} кв. {item["completion_year"]}',
-                            int(item['rooms']),
-                            item["number"]
-                        ]
+
+                for item in response['data']:
+                    s_live = self.extract_living_area(
+                        await (
+                            await self.session.request.get(f'https://glorax.com/flats/{item["id"]}')
+                        ).text()
+                    )
+
+                    self.result_mass.append(
+                        {
+                            "Тип": f'{item["rooms"]}К' if item['rooms'] != 0 else 'СТ',
+                            "S общ": item['square'],
+                            "S жил": s_live,
+                            "S кухни": '-',
+                            "Отд.": '-',
+                            "С/у": '-',
+                            "Балкон": "-",
+                            "Этаж": item["floor"],
+                            "№ объекта": item['roomNum'],
+                            "ЖК, оч. и корп.": 'Glorax Октябрьский',
+                            "Продавец": 'СЗ АРКТУР',
+                            "Район": "Октябрьский р-н",
+                            "Сдача": item['deliveryDate'][:4] if item['deliveryDate'][:4].isdigit() else '-',
+                            "Цена 100%": item['priceOffer'],
+                            "за м2": round(float(float(item['priceOffer']) / float(item['square'])), 2),
+                            "Баз. цена": '-',
+                            "Вознаграж.": '',
+                        }
                     )
                     await asyncio.sleep(0)
-            self.floor_count = len(result)
-            logger.info(f'Glorax; Len Pars Glorax Links == {len(result)}')
-            return result
+
+                page += 1
         except Exception as ex:
             await self.update_err(error="GloraxParser: " + str(ex))
             logger.warning(
                 f'''Glorax pars_links error\nExeption: {ex}\n''')
 
-    async def pars_data(self, data: str) -> None:
-        link, price, otd, completion, rooms, number = data.split('#')
-        try:
-            logger.info(f'Glorax; Start pars link == {link}')
-            price = int(float(price))
-            response = await self.session.request.get(
-                url=link
-            )
-            soup = BeautifulSoup(await response.text(), 'lxml')
-            pr_data = self.get_pretty_data_1(sp=soup)
-            self.result_mass.append(
-                {
-                    "Тип": self.rooms_pattern[int(rooms)],
-                    "S общ": float(pr_data["Общая площадь"]),
-                    "S жил": float(pr_data["Жилая площадь"]),
-                    "S кухни": '-',
-                    "Отд.": otd,
-                    "С/у": '-',
-                    "Балкон": "-",
-                    "Этаж": pr_data["Этаж"],
-                    "№ объекта": int(number),
-                    "ЖК, оч. и корп.": 'Glorax Октябрьский',
-                    "Продавец": 'СЗ АРКТУР',
-                    "Район": "Октябрьский р-н",
-                    "Сдача": completion,
-                    "Цена 100%": price,
-                    "за м2": round(float(float(price) / float(pr_data["Общая площадь"])), 2),
-                    "Баз. цена": '-',
-                    "Вознаграж.": '',
-                }
-            )
-            await asyncio.sleep(0)
-        except Exception as ex:
-            await self.update_err(error="GloraxParser: " + str(ex))
-            logger.warning(
-                f'''Glorax; Invalid link: {link}\nExeption: {ex}\n''')
-
     async def pars_all_data(self, url: str) -> None:
         try:
             logger.success(f"Glorax; Start pars; URL == {url}")
-            response = await self.session.request.get(
-                url
-            )
-            if response.status not in [200, 201, 202, 203, 204]:
-                await self.update_err(error="GloraxParser: " + f"Status code error == {response.status}")
-                logger.warning(f'Glorax; Invalid status code (Status code == {response.status})')
 
-            all_links: list[list] = await self.pars_links()
-            processes: [Awaitable] = []
-
-            for lnk in all_links:
-                logger.info(f'Glorax; Create PROCESS for Link №{all_links.index(lnk) + 1} out of {len(all_links)}')
-                processes.append(self.pars_data(f'{lnk[0]}#{lnk[1]}#{lnk[2]}#{lnk[3]}#{lnk[4]}#{lnk[-1]}'))
-
-            for process in self.chunks(processes, 4):
-                await asyncio.gather(*process)
+            await self.pars_links()
         except Exception as ex:
             self._fatal_error = True
             await self.update_err(error="GloraxParser // Fatal ERROR  -  " + str(ex))
@@ -181,8 +140,9 @@ class GloraxParser(BaseAsyncParserRequests):
         self.floor_count = len(self.result_mass)
 
 
-# if __name__ == '__main__':
-#     per = GloraxParser(
-#         exel=True
-#     )
-#     asyncio.run(per.run())
+if __name__ == '__main__':
+    per = GloraxParser(
+        exel=True
+    )
+    asyncio.run(per.run())
+

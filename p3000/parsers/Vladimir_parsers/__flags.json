@@ -1,0 +1,23 @@
+{
+    "ivan": {
+        "bool": false,
+        "minutes": 0,
+        "seconds": 0,
+        "state": "disabled",
+        "errors": {}
+    },
+    "vladimir": {
+        "bool": false,
+        "minutes": 0,
+        "seconds": 0,
+        "state": "disabled",
+        "errors": {}
+    },
+    "all_pars": {
+        "bool": false,
+        "minutes": 0,
+        "seconds": 0,
+        "state": "disabled",
+        "errors": {}
+    }
+}

@@ -72,10 +72,10 @@ class NmarketParser(BaseParserSelenium):
             self.driver.scroll()
             self.driver.sleep(1)
             self.driver.scroll()
-            self.driver.wait_for_element('div.pagination.ng-star-inserted', wait=10)
+            self.driver.wait_for_element('div.pagination', wait=10)
             soup = BeautifulSoup(self.driver.page_html, 'lxml')
-            all_pages = int(soup.select_one('div.pagination.ng-star-inserted').select('div.ng-star-inserted')[-2].text)
-
+            # all_pages = int(soup.select_one('div.pagination.ng-star-inserted').select('div.ng-star-inserted')[-2].text)
+            all_pages = int(soup.select_one('div.pagination').select('div')[-2].text)
             if self.fl_cnt == -1 or self.fl_cnt == 0:
                 self.fl_cnt = int(soup.select_one('div.search-result-counter').text.split(' - ')[-1].replace('\xa0', ''))
 
@@ -93,13 +93,23 @@ class NmarketParser(BaseParserSelenium):
                     self.driver.get(url)
                     self.driver.sleep(3)
                     self.driver.scroll()
+                    self.driver.scroll()
+                    self.driver.scroll()
+                    self.driver.scroll()
+                    self.driver.sleep(1)
+                    self.driver.scroll()
                     self.driver.wait_for_element('td.apartment-grid__table-td', wait=10)
                     self.driver.sleep(1)
 
                     soup = BeautifulSoup(self.driver.page_html, 'lxml')
                     dct = {}
-                    for row in soup.select('tr.apartment-grid__table-tr'):
+
+                    for row in soup.select_one('tbody.apartment-grid__table-tbody').select('tr'):
+                        ful_price = int(row.select_one('td:nth-child(16)').text.replace('\xa0', ''))
+                        m_price = int(row.select_one('td:nth-child(17)').text.replace('\xa0', ''))
                         if 'Glorax' in row.select_one('td:nth-child(12)').text.strip():
+                            ful_price = ful_price * 0.85
+                            m_price = m_price * 0.85
                             logger.info('Nmarket; skip Glorax')
                             self.__cnt_glorax += 1
                             continue
@@ -111,14 +121,14 @@ class NmarketParser(BaseParserSelenium):
                             "Отд.": row.select_one('td:nth-child(7)').text.strip(),
                             "С/у": self.num(row.select_one('td:nth-child(8)').text),
                             "Балкон": row.select_one('td:nth-child(9)').text.strip(),
-                            "Этаж": row.select_one('td:nth-child(10)').text.strip().replace(' ', ''),
+                            "Этаж": int(row.select_one('td:nth-child(10)').text.strip().replace(' ', '').split('/')[0]),
                             "№ объекта": int(row.select_one('td:nth-child(11)').text.strip()),
                             "ЖК, оч. и корп.": row.select_one('td:nth-child(12)').text.strip(),
                             "Продавец": row.select_one('td:nth-child(13)').text.strip(),
                             "Район": row.select_one('td:nth-child(14)').text.strip(),
                             "Сдача": row.select_one('td:nth-child(15)').text.strip(),
-                            "Цена 100%": int(row.select_one('td:nth-child(16)').text.replace('\xa0', '')),
-                            "за м2": int(row.select_one('td:nth-child(17)').text.replace('\xa0', '')),
+                            "Цена 100%": ful_price,
+                            "за м2": m_price,
                             "Баз. цена": int(row.select_one('td:nth-child(18)').text.replace('\xa0', '')),
                             "Вознаграж.": int(row.select_one('td:nth-child(19)').text.replace('\xa0', '')),
                         }
@@ -147,9 +157,9 @@ class NmarketParser(BaseParserSelenium):
         self.floor_count = len(self.result_mass) + self.__cnt_glorax
 
 
-# if __name__ == '__main__':
-#     per = NmarketParser(
-#         exel=True,
-#         headless=False,
-#     )
-#     per.run()
+if __name__ == '__main__':
+    per = NmarketParser(
+        exel=True,
+        headless=False,
+    )
+    per.run()

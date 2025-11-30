@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from typing import Union, Any, Type, Tuple
 
-from .Vladimir_parsers import vladimir_sk, legenda, aviator, glorax, nmarket
+from .Vladimir_parsers import vladimir_sk, legenda, aviator, glorax, vt
 from .Ivanovo_parsers import csy, default_kvartal, evropey_stile, fenix, ksk_holding, levitan, olimp, vidniy
 
 
@@ -103,7 +103,7 @@ class IvanovoManager(BaseManager):
 
 
 class VladimirManager(BaseManager):
-    def __init__(self, batch_size: int = 2):
+    def __init__(self, batch_size: int = 3):
         super().__init__(
             module_name='Vladimir',
             batch_size=batch_size
@@ -111,11 +111,11 @@ class VladimirManager(BaseManager):
 
     async def run_vladimir_module(self) -> str:
         parsers = [
+            (vt.VTParser, (), {'headless': False, 'err_name': ['vladimir', 'VT']}),
             (vladimir_sk.VladimirParser, (), {'err_name': ['vladimir', 'VladimirSK']}),
-            (legenda.LegendaParser, (), {'err_name': ['vladimir', 'Legenda']}),
-            (aviator.AviatorParser, (), {'err_name': ['vladimir', 'Aviator']}),
             (glorax.GloraxParser, (), {'err_name': ['vladimir', 'Glorax']}),
-            (nmarket.NmarketParser, (), {'headless': False, 'err_name': ['vladimir', 'Nmarket']}),
+            (aviator.AviatorParser, (), {'err_name': ['vladimir', 'Aviator']}),
+            (legenda.LegendaParser, (), {'err_name': ['vladimir', 'Legenda']}),
         ]
 
         results: list[dict] = await self._run_all_parsers(parsers)
@@ -145,6 +145,7 @@ class AllParsManager(BaseManager):
             (legenda.LegendaParser, (), {'err_name': ['all_pars', 'Legenda']}),
             (aviator.AviatorParser, (), {'err_name': ['all_pars', 'Aviator']}),
             (glorax.GloraxParser, (), {'err_name': ['all_pars', 'Glorax']}),
+            (vt.VTParser, (), {'headless': False, 'err_name': ['vladimir', 'VT']}),
             # (nmarket.NmarketParser, (), {'headless': False, 'err_name': ['all_pars', 'Nmarket']}),
         ]
 

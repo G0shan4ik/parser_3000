@@ -142,10 +142,10 @@ class FenixParser(BaseParserSelenium):
                                 self.driver.wait_for_element('div.object-modal__close-button')
                                 self.driver.click('div.object-modal__close-button')
                             except Exception as ex:
-                                asyncio.run(self.update_err(error="FenixParser: " + str(ex)))
+                                # asyncio.run(self.update_err(error="FenixParser: " + str(ex)))
                                 logger.warning(f'Fenix/Card; !Flag! Invalid pars item {self.__all_links.index(url) + 1} out of {len(self.__all_links)} (URL - {url})')
         except Exception as ex:
-            asyncio.run(self.update_err(error="FenixParser: " + str(ex)))
+            # asyncio.run(self.update_err(error="FenixParser: " + str(ex)))
             logger.warning(f'Fenix; Invalid pars URL (URL - {url})')
 
     def pars_all_data(self) -> None:
@@ -154,15 +154,15 @@ class FenixParser(BaseParserSelenium):
                 self.pars_mini_links(link)
         except Exception as ex:
             self._fatal_error = True
-            asyncio.run(self.update_err(error="FenixParser // Fatal ERROR  -  " + str(ex)))
+            # asyncio.run(self.update_err(error="FenixParser // Fatal ERROR  -  " + str(ex)))
             logger.error(f'Fatal ERROR Fenix ->\n{ex}\n\n')
 
         self.floor_count = len(self.result_mass)
 
 
-# if __name__ == '__main__':
-#     per = FenixParser(
-#         exel=True,
-#         headless=False
-#     )
-#     per.run()
+if __name__ == '__main__':
+    per = FenixParser(
+        exel=True,
+        headless=False
+    )
+    per.run()

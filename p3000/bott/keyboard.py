@@ -1,5 +1,4 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from markdown_it.rules_core import inline
 
 from .helpers import chunks, __vladimir_parsers_names, __ivanovo_parsers_names
 
