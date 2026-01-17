@@ -315,7 +315,10 @@ class VTParser(BaseParserSelenium):
                 cnt_real, cnt_good = 0, 0
                 for item in soup.select_one('div.container-search-box').select('relation-card-wrapper'):
                     try:
-                        cnt_real += 1
+                        cnt_real += 1 #tag grey string-truncate
+                        if 'От застройщика' not in item.select_one("div.tag.grey.string-truncate").text:
+                            logger.info(f"ZASTROISHIK SKIP")
+                            continue
                         dct = self.parse_flat_info(
                             text=item.select_one('span.mr-4').text,
                             info_gk=[

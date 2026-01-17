@@ -19,7 +19,13 @@ class BaseManager:
         self.batch_size = batch_size
 
     def to_exel(self, mass: list[dict]) -> str:
-        df = pd.DataFrame(mass)
+        __mass = []
+
+        for item in mass:
+            if item:
+                __mass.append(item)
+
+        df = pd.DataFrame(__mass)
         df.to_excel(f"all_exel/{datetime.now().date()}_{self.module_name}.xlsx")
 
         logger.success(f'<-- Success created MODULE_file (module_name -> {self.module_name})')
@@ -79,7 +85,7 @@ class BaseManager:
 
 
 class IvanovoManager(BaseManager):
-    def __init__(self, batch_size: int = 3):
+    def __init__(self, batch_size: int = 1):
         super().__init__(
             module_name='Ivanovo',
             batch_size=batch_size
@@ -103,7 +109,7 @@ class IvanovoManager(BaseManager):
 
 
 class VladimirManager(BaseManager):
-    def __init__(self, batch_size: int = 3):
+    def __init__(self, batch_size: int = 1):
         super().__init__(
             module_name='Vladimir',
             batch_size=batch_size
@@ -111,11 +117,11 @@ class VladimirManager(BaseManager):
 
     async def run_vladimir_module(self) -> str:
         parsers = [
-            (vt.VTParser, (), {'headless': False, 'err_name': ['vladimir', 'VT']}),
             (vladimir_sk.VladimirParser, (), {'err_name': ['vladimir', 'VladimirSK']}),
             (glorax.GloraxParser, (), {'err_name': ['vladimir', 'Glorax']}),
             (aviator.AviatorParser, (), {'err_name': ['vladimir', 'Aviator']}),
             (legenda.LegendaParser, (), {'err_name': ['vladimir', 'Legenda']}),
+            (vt.VTParser, (), {'headless': False, 'err_name': ['vladimir', 'VT']}),
         ]
 
         results: list[dict] = await self._run_all_parsers(parsers)

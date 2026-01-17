@@ -41,8 +41,13 @@ class BaseModel:
         )
 
     def to_exel(self, mass: list[dict], exel_name: str) -> None:
-        df = pd.DataFrame(mass)
+        __mass = []
 
+        for item in mass:
+            if item:
+                __mass.append(item)
+
+        df = pd.DataFrame(__mass)
         df.to_excel(exel_name)
 
         logger.success(f'{self.site_name.upper()}; <-- Success created file (name -> {self.site_name})')

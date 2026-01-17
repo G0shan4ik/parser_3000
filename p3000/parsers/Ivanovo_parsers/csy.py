@@ -1,4 +1,5 @@
 import asyncio
+from pprint import pprint
 
 from loguru import logger
 
@@ -80,22 +81,28 @@ class CSYParser(BaseParserRequests):
                     if item['status'] != 'available':
                         logger.info('CSY; Item was sale')
                         continue
+                    area_ob = '-'
+                    try:
+                        area_ob = round(float(item['estate']['estate_area']), 2)
+                    except:
+                        ...
+
                     _dct = {
-                        "Тип": 'СТ' if item['studia'] else item["rooms"].upper(),
-                        "S общ": round(float(item['area']), 2),
+                        "Тип": 'СТ' if item.get('studia', '') else item["rooms"].upper(),
+                        "S общ": area_ob,
                         "S жил": '-',
                         "S кухни": '-',
                         "Отд.": '-',
                         "С/у": '-',
                         "Балкон": "-",
-                        "Этаж": int(item['floor']),
+                        "Этаж": int(item['estate']['estate_floor']),
                         "№ объекта": '-',
                         "ЖК, оч. и корп.": item['complex_title'].replace('»', '"').replace('«', '"'),
                         "Продавец": 'Центр Строительных Услуг',
                         "Район": rayons[item['house_id']],
                         "Сдача": '-',
-                        "Цена 100%": int(item['price'].split('.')[0]),
-                        "за м2": round(float(item['price_m2']), 2),
+                        "Цена 100%": int(item['estate']['estate_price'].split('.')[0]),
+                        "за м2": round(float(item['estate']['estate_price_m2']), 2),
                         "Баз. цена": '-',
                         "Вознаграж.": '',
                     }
@@ -110,6 +117,7 @@ class CSYParser(BaseParserRequests):
             logger.error(f'Fatal ERROR CSY ->\n{ex}\n\n')
 
         self.floor_count = len(self.result_mass)
+        logger.success(f'CSY; Success pars Item LEN == {self.floor_count}')
 
 
 # if __name__ == '__main__':
