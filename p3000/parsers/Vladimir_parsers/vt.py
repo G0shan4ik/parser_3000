@@ -26,9 +26,9 @@ class VTParser(BaseParserSelenium):
         self.pars_links: list[str] = []
 
         self.pars_names: list[str] = [
-            # 'Владимир'
-            'Суздаль',
-            'Ковров',
+            # 'Суздаль',
+            # 'Ковров',
+            'Владимир',
         ]
 
     @staticmethod
@@ -41,6 +41,13 @@ class VTParser(BaseParserSelenium):
                 return 'Дом на Туманова'
             elif 'аурум' in name.lower():
                 return 'Аурум'
+            elif 'грани' in name:
+                return 'ЖК Грани'
+            elif 'гармония' in name:
+                return 'ЖК Гармония'
+            elif 'черемушки' in name:
+                return f'ЖК Черёмушки'
+
             elif 'триумфальный' in name:
                 return ''
             elif 'чайковский' in name:
@@ -50,13 +57,6 @@ class VTParser(BaseParserSelenium):
             elif 'держава' in name:
                 return ''
             elif 'свобода" в микрорайоне' in name:
-                return ''
-            elif 'грани' in name:
-                return ''
-
-            elif 'гармония' in name:
-                return ''
-            elif 'черемушки' in name:
                 return ''
             # /Ковров
 
@@ -75,8 +75,6 @@ class VTParser(BaseParserSelenium):
             elif '"горького"' in name:
                 return f'Горького 1 оч. корп. {name.split(",")[0][-1]}'
             elif 'Загородный парк' in name:
-                # if '/' in name:
-                #     return 'Загородный парк 1 оч. корп. 5/1'
                 return f'Загородный парк 1 оч. корп. {name.split("корп.")[1].split("(")[0].strip()}'
             elif 'Дом на мира' in name:
                 return f'Дом на Мира {name.split(", ")[1]}'
@@ -140,27 +138,30 @@ class VTParser(BaseParserSelenium):
                 return f'Дом на Мельничном проезде,{name.split(",")[1]}'
             elif 'Дом на батурина' in name:
                 return f'Дом на Батурина,{name.split(",")[1]}'
+            elif 'фестивальный' in name.lower():
+                mass_name = name.replace('Фестивальный', 'ЖК Фестивальный').split(', ')
+                return f'{mass_name[0]} {mass_name[1]} оч. корп. {mass_name[-1]}'
 
-            elif 'Таунхаусы' in name:
+            elif 'сталинградский бульвар, ' in name:
                 return ''
             elif 'Glorax' in name:
                 return ''
-            elif 'володарского' in name:
-                return ''
-            elif 'Новопарк' in name:
-                return ''
-            elif 'Комьюнити' in name:
-                return ""
-            elif 'сталинградский бульвар, ' in name:
-                # return f'''Сталинградский бульвар, {name.split('"')[1][-1]}'''
-                return ''
 
-            elif 'Микрорайон Славный' in name or 'verizino life' in name:
-                return ''
-            elif 'восход в коврове' in name.lower():
-                return ''
+            # elif 'Эталон' in name:
+            #     return ''
+            # elif 'Таунхаусы' in name:
+            #     return ''
+            # elif 'володарского' in name:
+            #     return ''
+            # elif 'Новопарк' in name:
+            #     return ''
+            # elif 'Комьюнити' in name:
+            #     return ""
+            # elif 'Микрорайон Славный' in name or 'verizino life' in name:
+            #     return ''
+            # elif 'восход в коврове' in name.lower():
+            #     return ''
             # /Владимир
-
 
             return name
         except Exception as ex:
@@ -282,9 +283,9 @@ class VTParser(BaseParserSelenium):
             logger.warning(f"VT; Error auth name (NAME == {name})\n {ex}")
 
     def pars_data(self):
-        self.driver.get('https://is.vt24.ru/object-realty-new')
-        self.driver.sleep(4)
         for name in self.pars_names:
+            self.driver.get('https://is.vt24.ru/object-realty-new')
+            self.driver.sleep(4)
             try:
                 self.auth_by_name(name=name)
                 self.driver.sleep(4)

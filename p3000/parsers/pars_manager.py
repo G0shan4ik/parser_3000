@@ -7,14 +7,12 @@ from datetime import datetime
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
-from typing import Union, Any, Type, Tuple
-
 from .Vladimir_parsers import vladimir_sk, legenda, aviator, glorax, vt
-from .Ivanovo_parsers import csy, default_kvartal, evropey_stile, fenix, ksk_holding, levitan, olimp, vidniy
+from .Ivanovo_parsers import csy, default_kvartal, evropey_stile, fenix, ksk_holding, levitan, olimp, vidniy, akvilon
 
 
 class BaseManager:
-    def __init__(self, module_name: str, batch_size: int = 3):
+    def __init__(self, module_name: str, batch_size: int = 1):
         self.module_name = module_name
         self.batch_size = batch_size
 
@@ -93,14 +91,15 @@ class IvanovoManager(BaseManager):
 
     async def run_ivanovo_module(self):
         parsers = [
+            (akvilon.AkvilonParser, (), {'err_name': ['all_pars', 'Akvilon']}),
             (csy.CSYParser, (), {'err_name': ['ivan', 'CSY']}),
             (default_kvartal.DefaultKvartalParser, (), {'err_name': ['ivan', 'DefaultKvartal']}),
             (evropey_stile.EuropeyStileParser, (), {'err_name': ['ivan', 'EuropeyStile']}),
             (ksk_holding.KSKHoldingParser, (), {'err_name': ['ivan', 'KSK_Holding']}),
             (levitan.LevitanParser, (), {'err_name': ['ivan', 'Levitan']}),
             (olimp.OlimpParser, (), {'err_name': ['ivan', 'Olimp']}),
-            (fenix.FenixParser, (), {'headless': False, 'err_name': ['ivan', 'Fenix']}),
             (vidniy.VidniyParser, (), {'err_name': ['ivan', 'Vidniy']}),
+            (fenix.FenixParser, (), {'headless': False, 'err_name': ['ivan', 'Fenix']}),
         ]
 
         results: list[dict] = await self._run_all_parsers(parsers)
@@ -130,7 +129,7 @@ class VladimirManager(BaseManager):
 
 
 class AllParsManager(BaseManager):
-    def __init__(self, batch_size: int = 4):
+    def __init__(self, batch_size: int = 2):
         super().__init__(
             module_name='all_pars',
             batch_size=batch_size
@@ -148,6 +147,7 @@ class AllParsManager(BaseManager):
             (vidniy.VidniyParser, (), {'err_name': ['all_pars', 'Vidniy']}),
 
             (vladimir_sk.VladimirParser, (), {'err_name': ['all_pars', 'VladimirSK']}),
+            (akvilon.AkvilonParser, (), {'err_name': ['all_pars', 'Akvilon']}),
             (legenda.LegendaParser, (), {'err_name': ['all_pars', 'Legenda']}),
             (aviator.AviatorParser, (), {'err_name': ['all_pars', 'Aviator']}),
             (glorax.GloraxParser, (), {'err_name': ['all_pars', 'Glorax']}),
