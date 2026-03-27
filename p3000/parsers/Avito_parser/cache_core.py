@@ -9,7 +9,7 @@ from loguru import logger
 
 class CacheCore:
 
-    def __init__(self, cache_name: str):
+    def     __init__(self, cache_name: str):
         self.cache_name = cache_name
         self.cache = diskcache.Cache(f'avito__{cache_name}')
 
