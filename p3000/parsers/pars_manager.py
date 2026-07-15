@@ -116,11 +116,11 @@ class VladimirManager(BaseManager):
 
     async def run_vladimir_module(self) -> str:
         parsers = [
+            (vt.VTParser, (), {'headless': False, 'err_name': ['vladimir', 'VT']}),
             (vladimir_sk.VladimirParser, (), {'err_name': ['vladimir', 'VladimirSK']}),
             (glorax.GloraxParser, (), {'err_name': ['vladimir', 'Glorax']}),
             (aviator.AviatorParser, (), {'err_name': ['vladimir', 'Aviator']}),
             (legenda.LegendaParser, (), {'err_name': ['vladimir', 'Legenda']}),
-            (vt.VTParser, (), {'headless': False, 'err_name': ['vladimir', 'VT']}),
         ]
 
         results: list[dict] = await self._run_all_parsers(parsers)
@@ -152,7 +152,6 @@ class AllParsManager(BaseManager):
             (aviator.AviatorParser, (), {'err_name': ['all_pars', 'Aviator']}),
             (glorax.GloraxParser, (), {'err_name': ['all_pars', 'Glorax']}),
             (vt.VTParser, (), {'headless': False, 'err_name': ['vladimir', 'VT']}),
-            # (nmarket.NmarketParser, (), {'headless': False, 'err_name': ['all_pars', 'Nmarket']}),
         ]
 
         results: list[dict] = await self._run_all_parsers(parsers)

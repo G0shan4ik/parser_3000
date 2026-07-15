@@ -126,9 +126,9 @@ class LegendaParser(BaseParserSelenium):
         self.floor_count = len(self.result_mass)
 
 
-# if __name__ == '__main__':
-#     per = LegendaParser(
-#         exel=True,
-#         retry_count=1
-#     )
-#     per.run()
+if __name__ == '__main__':
+    per = LegendaParser(
+        exel=True,
+        retry_count=1
+    )
+    per.run()

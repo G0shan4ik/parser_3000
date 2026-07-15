@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 from pprint import pprint
 
 from loguru import logger
@@ -21,7 +22,7 @@ class StatusDelay(Enum):
 
 
 class AvitoParser(BaseParserSelenium):
-    def __init__(self, site_name: str, err_name = None, headless: bool = True, retry_count: int = 3, exel: bool = False, single: bool = False):
+    def __init__(self, site_name: str, err_name = None, headless: bool = True, retry_count: int = 3, exel: bool = False, single: bool = False, _date: str = ''):
         super().__init__(
             start_url='https://www.avito.ru',
             site_name=site_name,
@@ -34,7 +35,9 @@ class AvitoParser(BaseParserSelenium):
         self.cnt: int = 0
         self.driver = None
 
-        self.delay: int = 3
+        self._date = _date
+
+        self.delay: int = 2
 
         self.pars_links: dict = {
             'Vladimir': 'https://www.avito.ru/vladimir/kvartiry/prodam/novostroyka/na-stadii-sdachi-ASgBAgECAkSSA8YQ5geOUgFFuMENFHsiZnJvbSI6bnVsbCwidG8iOjF9?f=ASgBAgECBESSA8YQ5geOUpC~DZKuNdKEEsyKiwMBRbjBDRR7ImZyb20iOm51bGwsInRvIjoxfQ&localPriority=0&p=1',
@@ -43,20 +46,24 @@ class AvitoParser(BaseParserSelenium):
         }
 
         self.pars_names: list[str] = [
+            'Kovrov',
+            'Ivanovo',
             'Vladimir',
-            # 'Ivanovo',
-            # 'Kovrov',
         ]
         self.rus_name = {
+            'Kovrov': 'Ковров',
             'Vladimir': 'Владимир',
             'Ivanovo': 'Иваново',
-            'Kovrov': 'Ковров'
         }
 
     @staticmethod
     def get_other_data(sp):
         rooms, full_area, kitchen_area, leave_area, floor, balkon, otd, toilet = '-', '-', '-', '-', '-', '-', '-', '-'
-        for item in sp.select_one('ul').select('li'):
+        new_sp = ''
+        for good_teg in sp.select('ul'):
+            if 'Количество комнат' in good_teg.text:
+                new_sp = good_teg
+        for item in new_sp.select('li'):
             if 'Количество комнат' in item.text:
                 rooms = f"{int(item.text.replace('Количество комнат: ', ''))}К" if 'студия' not in item.text else 'СТ'
             elif 'Общая площадь' in item.text:
@@ -130,6 +137,15 @@ class AvitoParser(BaseParserSelenium):
                 self.driver.sleep(randint(1, 4))
             self.driver.sleep(randint(self.delay * 35, self.delay * 45))
 
+    @staticmethod
+    def check_unique_dct(full_data: list[dict], dct: dict):
+        for item in full_data:
+            if dct['Тип'] == item['Тип'] and dct['Этаж'] == item['Этаж'] and dct['S общ'] == item['S общ'] and \
+                    dct['ЖК, оч. и корп.'] == item['ЖК, оч. и корп.'] and \
+                    dct['за м2'] == item['за м2'] and dct['Цена 100%'] == item['Цена 100%']:
+                return True
+        return False
+
     def auth_avito(self, link: str, try_cnt: int) -> None:
         if try_cnt == 0:
             self.driver.get(self.start_url)
@@ -144,83 +160,114 @@ class AvitoParser(BaseParserSelenium):
         self.driver.sleep(randint(1, self.delay))
 
     def pars_data(self, name:str):
-        _cache = CacheCore(cache_name=f'{name}')
+        # self.driver.driver.set_page_load_timeout(10)
+        try:
+            _cache = CacheCore(cache_name=f'{name}')
 
-        _all_pars_card_url = _cache.get()
+            _all_pars_card_url = _cache.get()
+            _all_pars_card_url.sort()
+            cnt = 0
 
-        cnt = 0
+            logger.success(f'Avito ({name}); ALL PARS CARDS LINK == {len(_all_pars_card_url)}')
 
-        logger.success(f'Avito ({name}); ALL PARS CARDS LINK == {len(_all_pars_card_url)}')
+            for card_link in _all_pars_card_url:
+                logger.info(f'Avito ({name}); Start Pars CARD {_all_pars_card_url.index(card_link) + 1} out of {len(_all_pars_card_url)} ({card_link})')
+                cnt += 1
+                try:
+                    if _cache.exists(card_link) is False:
+                        continue
+                    try:
+                        self.driver.get(card_link, wait=5)
+                    except:
+                        try:
+                            self.driver.reload()
+                            self.driver.sleep(randint(1, 2))
+                        except:
+                            self.driver.reload()
+                            self.driver.sleep(randint(1, 2))
 
-        for card_link in _all_pars_card_url:
-            logger.info(f'Avito ({name}); Start Pars CARD {_all_pars_card_url.index(card_link) + 1} out of {len(_all_pars_card_url)} ({card_link})')
-            cnt += 1
-            try:
-                if _cache.exists(card_link) is False:
-                    continue
+                    if cnt % 50 == 0:
+                        self.get_delay(StatusDelay.CARD)
+                    else:
+                        self.get_delay(StatusDelay.DEFAULT_CARD)
 
-                self.driver.get(card_link)
-                if cnt % 50 == 0:
-                    self.get_delay(StatusDelay.CARD)
-                else:
-                    self.get_delay(StatusDelay.DEFAULT_CARD)
+                    soup = BeautifulSoup(self.driver.page_html, 'lxml')
+                    if 'Объявление закрыто.' in str(soup) or 'Объявление истекло.' in str(soup) or 'Объявление не посмотреть' in str(soup) or 'Оно ещё на проверке' in str(soup):
+                        logger.warning(f'Avito ({name}); Объявление закрыто URL: {card_link}')
+                        _all_pars_card_url.remove(card_link)
+                        _cache.update(
+                            key='pars_cards_urls',
+                            value=list(set(_all_pars_card_url))
+                        )
+                        continue
 
-                soup = BeautifulSoup(self.driver.page_html, 'lxml')
+                    zastroy = ''
+                    rooms, full_area, kitchen_area, leave_area, floor, balkon, otd, toilet = self.get_other_data(
+                        soup.select_one('div[data-marker="item-view/item-params"]'))
+                    gk, sdacha = self.get_other_data_2_0(soup.select('div[data-marker="item-view/item-params"]')[1])
 
-                zastroy = ''
-                rooms, full_area, kitchen_area, leave_area, floor, balkon, otd, toilet = self.get_other_data(
-                    soup.select_one('div[data-marker="item-view/item-params"]'))
-                gk, sdacha = self.get_other_data_2_0(soup.select('div[data-marker="item-view/item-params"]')[1])
+                    if 'Застройщик' in soup.select_one('div[data-marker="item-view/seller-info"]').text:
+                        zastroy = [item for item in
+                                   soup.select_one('div[data-marker="item-view/seller-info"]').text.split('Застройщик')
+                                   if item][0].strip()
 
-                if 'Застройщик' in soup.select_one('div[data-marker="item-view/seller-info"]').text:
-                    zastroy = soup.select_one('div[data-marker="item-view/seller-info"]').text.split('Застройщик')[0].strip()
+                    if zastroy:
+                        ...
+                    else:
+                        __num = f'{_all_pars_card_url.index(card_link) + 1} out of {len(_all_pars_card_url)}'
+                        logger.warning(f'Avito ({name}); Not ---  ZASTROY  {__num} --- {card_link}')
+                        continue
 
-                if zastroy:
-                    ...
-                else:
-                    __num = f'{_all_pars_card_url.index(card_link) + 1} out of {len(_all_pars_card_url)}'
-                    logger.warning(f'Avito ({name}); Not ---  ZASTROY  {__num} --- {card_link}')
-                    continue
+                    dct = {
+                        'Дата': self._date,
+                        'Город': self.rus_name[name],
+                        'Тип': rooms,
+                        'S общ': full_area,
+                        'S жил': leave_area,
+                        'S кухни': kitchen_area,
+                        'Отд.': otd,
+                        'С/у': toilet,
+                        'Балкон': balkon,
+                        'Этаж': floor,
+                        '№ объекта': '-',
+                        'ЖК, оч. и корп.': gk,
+                        'Продавец': 'Игротек' if zastroy.strip() == 'ЖК Заречье парк' else zastroy,
+                        'Район': soup.select_one('div[itemprop="address"]').text,
+                        'Сдача': sdacha,
+                        'Цена 100%': int(soup.select_one('span[itemprop="price"]').get('content')),
+                        'за м2': int(int(soup.select_one('span[itemprop="price"]').get('content')) / full_area),
+                        'Баз. цена': '-',
+                        'Вознаграж.': ''
+                    }
 
-                dct = {
-                    'Город': self.rus_name[name],
-                    'Тип': rooms,
-                    'S общ': full_area,
-                    'S жил': leave_area,
-                    'S кухни': kitchen_area,
-                    'Отд.': otd,
-                    'С/у': toilet,
-                    'Балкон': balkon,
-                    'Этаж': floor,
-                    '№ объекта': '-',
-                    'ЖК, оч. и корп.': gk,
-                    'Продавец': zastroy,
-                    'Район': soup.select_one('div[itemprop="address"]').text,
-                    'Сдача': sdacha,
-                    'Цена 100%': int(soup.select_one('span[itemprop="price"]').get('content')),
-                    'за м2': int(int(soup.select_one('span[itemprop="price"]').get('content')) / full_area),
-                    'Баз. цена': '-',
-                    'Вознаграж.': ''
-                }
+                    if self.check_unique_dct(_cache.get_all_values(), dct):
+                        logger.warning(f'Avito ({name}) (check_unique_dct); ПОВТОР ОБЪЯВЛЕНИЯ URL: {card_link}')
+                        _all_pars_card_url.remove(card_link)
+                        _cache.update(
+                            key='pars_cards_urls',
+                            value=list(set(_all_pars_card_url))
+                        )
+                        continue
 
-                _cache.add(
-                    key=card_link,
-                    value=dct
-                )
-                pprint(dct)
+                    _cache.add(
+                        key=card_link,
+                        value=dct
+                    )
+                    pprint(dct)
 
-                self.driver.sleep(randint(self.delay, self.delay * 2))
-            except Exception as ex:
-                soup = BeautifulSoup(self.driver.page_html, 'lxml')
-                if 'Объявление истекло.' in soup.select_one('h1').text:
-                    logger.info(f'Avito ({name}); "Объявление истекло" url == {card_link}')
-                    self.driver.sleep(randint(30, 120))
-                    continue
-                logger.warning(f"Avito; Error (pars_data);  Exeption -> {ex}\n\n")
-                self.driver.sleep(randint(30, 120))
+                    self.driver.sleep(randint(self.delay, self.delay * 2))
+                except Exception as ex:
+                    soup = BeautifulSoup(self.driver.page_html, 'lxml')
+                    with open(f'index_error.html', 'w', encoding='utf-8') as file:
+                        file.write(str(soup))
 
-        self.result_mass = _cache.get_all_values()
-        self.floor_count = _cache.size()
+                    logger.warning(f"Avito; Error (pars_data) {card_link};  Exeption -> {ex}\n\n")
+                    self.driver.sleep(randint(20, 50))
+
+            self.result_mass = _cache.get_all_values()
+            self.floor_count = _cache.size()
+        except Exception as ex:
+            logger.warning(f'Warning link : {ex}')
 
     def pars_all_pages(self, name: str, start_url: str):
         _cache = CacheCore(cache_name=f'{name}')
@@ -228,7 +275,6 @@ class AvitoParser(BaseParserSelenium):
 
         full_pages_num = int(int(soup.select_one('span[data-marker="page-title/count"]').text)/50) + 2
 
-        cache_list_urls = []
         __cache_urls = _cache.get()
 
         for num in range(1, full_pages_num):
@@ -236,7 +282,14 @@ class AvitoParser(BaseParserSelenium):
             logger.info(f'AvitoParser ({name}); Start Pars PAGE Link №{num} out of {full_pages_num - 1} {_new_link}')
 
             if num != 1:
-                self.driver.get(_new_link)
+                try:
+                    self.driver.get(_new_link)
+                except:
+                    try:
+                        self.driver.reload()
+                    except:
+                        self.driver.reload()
+
                 self.get_delay(StatusDelay.DEFAULT_PAGE)
 
             if num == full_pages_num - 1:
@@ -247,58 +300,61 @@ class AvitoParser(BaseParserSelenium):
 
             for _item in __soup.select('a[data-marker="item-photo-sliderLink"]'):
                 link = _item.get('href')
-                if link in __cache_urls:
+                if f'https://www.avito.ru{link}'.split('?')[0] in [item.split('?')[0] for item in __cache_urls]:
                     logger.warning(f'Avito ({name}); Link already exist https://www.avito.ru{link}')
                     continue
                 _all_pars_card_url.append(f'https://www.avito.ru{link}')
                 logger.info(f'Avito ({name}); NEW LINK https://www.avito.ru{link}')
 
             if _all_pars_card_url:
-                cache_list_urls.extend(_all_pars_card_url)
+                __cache_urls.extend(_all_pars_card_url)
                 _cache.update(
                     key='pars_cards_urls',
-                    value=cache_list_urls
+                    value=list(set(__cache_urls))
                 )
+                print(len(_cache.get()))
 
             logger.info(f'Avito ({name}); Page {num}, card {len(_all_pars_card_url)}')
         logger.success(f'Avito ({name}); ALL PARS CARDS LINK == {len(_cache.get())}')
 
 
     def pars_all_data(self) -> None:
-        try:
-            try_cnt = 0
-            for _name in self.pars_names:
+        try_cnt = 0
+        for _name in self.pars_names:
+            self.site_name = _name
 
-                # logger.info(f'AvitoParser ({_name}); Started authorize')
-                # self.auth_avito(link=self.pars_links[_name], try_cnt=try_cnt)
-                # try_cnt += 1
-                # logger.success(f'AvitoParser ({_name}); SUCCESS authorize')
-                #
-                # logger.info(f'AvitoParser ({_name}); Start Pars PAGES')
-                # self.pars_all_pages(name=_name, start_url=self.pars_links[_name])
-                # logger.success(f'AvitoParser ({_name}); SUCCESS Pars PAGES')
-                #
-                # logger.info(f'AvitoParser ({_name}); Start Pars ALL_DATA')
-                # self.pars_data(name=_name)
-                # logger.success(f'AvitoParser ({_name}); SUCCESS Pars ALL_DATA')
+            logger.info(f'AvitoParser ({_name}); Started authorize')
+            self.auth_avito(link=self.pars_links[_name], try_cnt=try_cnt)
+            try_cnt += 1
+            logger.success(f'AvitoParser ({_name}); SUCCESS authorize')
 
-                _cache = CacheCore(cache_name=f'{_name}')
-                self.result_mass = _cache.get_all_values()
-                self.floor_count = _cache.size()
+            logger.info(f'AvitoParser ({_name}); Start Pars PAGES')
+            self.pars_all_pages(name=_name, start_url=self.pars_links[_name])
+            logger.success(f'AvitoParser ({_name}); SUCCESS Pars PAGES')
 
-        except Exception as ex:
-            self._fatal_error = True
-            logger.error(f'Fatal ERROR AvitoParser ->\n{ex}\n\n')
+            logger.info(f'AvitoParser ({_name}); Start Pars ALL_DATA')
+            self.pars_data(name=_name)
+            logger.success(f'AvitoParser ({_name}); SUCCESS Pars ALL_DATA')
+
+            # _cache = CacheCore(cache_name=f'{_name}')
+            # self.result_mass = _cache.get_all_values()
+            # self.floor_count = _cache.size()
+            #
+            # _exel_name = f"all_exel/exel_2026-17-10/{datetime.now().date()}_{self.site_name}.xlsx"     # МЕНЯТЬ ДАТУ ПАПКИ
+            # self.to_exel(mass=self.result_mass, exel_name=_exel_name)
+            # logger.info(f'AvitoitoParser; Avito flats {_name} count == {self.floor_count}')
 
         logger.info(f'AvitoParser; Avito flats count == {self.floor_count}')
-        # self.driver.sleep(randint(30, 120))
+        self.driver.sleep(randint(5, 10))
         self.driver.close()
 
 
 if __name__ == '__main__':
     per = AvitoParser(
-        site_name='avito_Vladimir',  # avito_Ivanovo avito_Kovrov avito_Vladimir
-        exel=True,
+        site_name='avito',
+        exel=False,
         headless=False,
+
+        _date='17.07.2026'  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     )
     per.run()

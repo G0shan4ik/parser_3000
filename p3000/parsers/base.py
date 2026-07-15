@@ -50,7 +50,7 @@ class BaseModel:
         df = pd.DataFrame(__mass)
         df.to_excel(exel_name)
 
-        logger.success(f'{self.site_name.upper()}; <-- Success created file (name -> {self.site_name})')
+        logger.success(f'{self.site_name.upper()}; <-- Success created file (name -> {self.site_name}); Items Count == {len(__mass)}')
 
 
 class BaseParserSelenium(ABC, BaseModel):
@@ -88,6 +88,9 @@ class BaseParserSelenium(ABC, BaseModel):
         )
         def run_parser(driver: Driver, data: str) -> None:
             self.driver = driver
+            # print(type(driver))
+            # print(dir(driver))
+            # driver._driver.set_page_load_timeout(5)
             self.driver.get(data)
             logger.success(f'{self.site_name.upper()}; START pars {self.site_name.upper()} --->')
 

@@ -34,6 +34,22 @@ class VTParser(BaseParserSelenium):
     @staticmethod
     def change_gk_name(name: str) -> str:
         try:
+            #
+            if 'парадный' in name.lower():
+                return ''
+            elif 'cвобода' in name.lower():
+                return ''
+            elif 'квартал нового тысячелетия 1 оч. корп' in name.lower():
+                return 'Квартал нового тысячелетия 1 оч. корп.1'
+            elif not name:
+                return ''
+
+            elif 'восток, к1 добросельская д.178' in name.lower():
+                return 'Восток 1 оч. корп. 1'
+            elif 'восток, к2 добросельская д.180' in name.lower():
+                return 'Восток 2 оч. корп. 2'
+            #
+
             # Ковров
             if 'фамилия' in name.lower():
                 return f'Фамилия {name[-1]} оч. корп. {name[-1]}'
@@ -62,8 +78,6 @@ class VTParser(BaseParserSelenium):
 
 
             # Суздаль
-            elif 'нового тысячелетия' in name:
-                return f'Квартал нового тысячелетия 1 оч. корп. {name[-1]}'.strip()
             elif 'Мечта' in name:
                 return 'Мечта'
             elif 'всполье' in name:
@@ -98,8 +112,8 @@ class VTParser(BaseParserSelenium):
             elif 'Отражение, ' in name:
                 if 'Отражение, корпус 1' in name:
                     return ''
-                if 'корп.' in name:
-                    return f'Отражение 1 оч. корп. {name.split("корп.")[1].split()[0]}'
+                if ', к' in name:
+                    return f'Отражение 1 оч. корп. {name.split(", к")[1].split()[0]}'
 
                 return f'Отражение 1 оч. корп. {name.split("корпус ")[1].split()[0]}'
             elif 'Гвардейский, 4 по' in name or '/' in name:
@@ -124,7 +138,9 @@ class VTParser(BaseParserSelenium):
             elif 'Соколиный' in name:
                 return f'Соколиный парк 1 оч. корп. {name[-1]}'
             elif 'Квартал новаторов, ' in name:
-                return name.replace(',', ' 1 оч.').replace('новаторов', 'Новаторов').replace('корп.', 'корп. ').replace('  ', ' ').strip()
+                res = name.replace(',', ' 1 оч.').replace('новаторов', 'Новаторов').replace('корп.', 'корп. ').replace('  ', ' ').strip()
+                _korp = res[-1]
+                return f"{res.split(' корп. ')[0]} корп. {_korp}"
             elif '"смоленская ' in name:
                 if '3а' in name:
                     return f'Смоленская 3А'
@@ -142,14 +158,16 @@ class VTParser(BaseParserSelenium):
                 mass_name = name.replace('Фестивальный', 'ЖК Фестивальный').split(', ')
                 return f'{mass_name[0]} {mass_name[1]} оч. корп. {mass_name[-1]}'
 
-            elif 'сталинградский бульвар, ' in name:
+            elif 'сталинградский бульвар' in name:
                 return ''
             elif 'Glorax' in name:
                 return ''
+            elif 'мичурина' in name:
+                return ''
+            elif 'Таунхаусы' in name:
+                return ''
 
             # elif 'Эталон' in name:
-            #     return ''
-            # elif 'Таунхаусы' in name:
             #     return ''
             # elif 'володарского' in name:
             #     return ''
@@ -356,9 +374,23 @@ class VTParser(BaseParserSelenium):
             logger.info('VT; Started authorize')
             try:
                 self.driver.get(self.start_url)
+
                 self.driver.sleep(3)
-                self.driver.wait_for_element('input#email', wait=10)
-                self.driver.type('input#email', 'partners@stroimgroup.ru', wait=10)
+                try:
+                    self.driver.wait_for_element('input#email', wait=10)
+                    self.driver.type('input#email', 'partners@stroimgroup.ru', wait=10)
+                except:
+                    try:
+                        self.driver.reload()
+                        self.driver.sleep(1)
+                        self.driver.wait_for_element('input#email', wait=10)
+                        self.driver.type('input#email', 'partners@stroimgroup.ru', wait=10)
+                    except:
+                        self.driver.reload()
+                        self.driver.sleep(1)
+                        self.driver.wait_for_element('input#email', wait=10)
+                        self.driver.type('input#email', 'partners@stroimgroup.ru', wait=10)
+
                 self.driver.sleep(2)
                 self.driver.wait_for_element('input#password', wait=10)
                 self.driver.type('input#password', 'Roma200607', wait=10)

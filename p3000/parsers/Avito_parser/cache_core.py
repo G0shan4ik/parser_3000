@@ -75,7 +75,7 @@ class CacheCore:
 
     # дополнительный полезный метод
     def get(self, key: str = 'pars_cards_urls'):
-        if key not in self.cache and key == 'pars_cards_urls':
+        if key not in self.cache:
             return []
         return self.cache.get(key)
 

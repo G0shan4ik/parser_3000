@@ -37,7 +37,9 @@ class VladimirParser(BaseAsyncParserRequests):
         self.__facing_pattern = {
             "Строительная": "П/Чист",
             "Черновая отделка": "Черн",
+            "Без отделки": "Без отделки",
             'White Box (предчистовая)': 'П/Чист',
+            'Предчистовая': 'П/Чист',
             "": "",
         }
         self.__S_Y = {
@@ -103,7 +105,8 @@ class VladimirParser(BaseAsyncParserRequests):
                         gk_name = 'ЖК Маршал' if 'ЖК Маршал' in item['project_title'] else item['project_title']
                         if 'Микрорайон Славный' in gk_name or 'VERIZINO life' in gk_name:
                             gk_name = "Еловая, 82" if 'ЖК Маршал' in item['project_title'] else item['house']
-
+                        if 'cвобода' in gk_name.lower() or 'усадьба за клязьмой' in gk_name.lower():
+                            continue
 
                         self.result_mass.append(
                             {
@@ -116,7 +119,7 @@ class VladimirParser(BaseAsyncParserRequests):
                                 "Балкон": "-",
                                 "Этаж": int(item['floor_of'].split('/')[0]),
                                 "№ объекта": int(item['id']),
-                                "ЖК, оч. и корп.": gk_name,
+                                "ЖК, оч. и корп.": gk_name if 'Триумфальный' != gk_name else 'ЖК Триумфальный',
                                 "Продавец": 'СЗ СК КОНТИНЕНТ ЮЗ' if 'ЖК Маршал' in item['project_title'] else f'Континент, {"Владимир" if "vladimir" in url else "Ковров"}',
                                 "Район": "Еловая, 82" if 'ЖК Маршал' in item['project_title'] else item['house'],
                                 "Сдача": item["development_quarter"].replace('квартал', 'кв.'),
@@ -127,8 +130,6 @@ class VladimirParser(BaseAsyncParserRequests):
                             }
                         )
                         await asyncio.sleep(0)
-
-
                 except Exception as ex:
                     if 'совмещенный, 1 раздельный' not in str(ex):
                         await self.update_err(error="VladimirParser: " + str(ex))
