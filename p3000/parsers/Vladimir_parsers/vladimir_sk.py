@@ -107,6 +107,8 @@ class VladimirParser(BaseAsyncParserRequests):
                             gk_name = "Еловая, 82" if 'ЖК Маршал' in item['project_title'] else item['house']
                         if 'cвобода' in gk_name.lower() or 'усадьба за клязьмой' in gk_name.lower():
                             continue
+                        if 'Сталинградский бульвар 8Б' in gk_name:
+                            gk_name = 'ЖК Сталинградский бульвар, 8Б'
 
                         self.result_mass.append(
                             {

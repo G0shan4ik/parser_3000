@@ -8,7 +8,7 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
 from .Vladimir_parsers import vladimir_sk, legenda, aviator, glorax, vt
-from .Ivanovo_parsers import csy, default_kvartal, evropey_stile, fenix, ksk_holding, levitan, olimp, vidniy, akvilon
+from .Ivanovo_parsers import csy, default_kvartal, evropey_stile, fenix, ksk_holding, levitan, olimp, vidniy, akvilon, stroitec
 
 
 class BaseManager:
@@ -91,6 +91,7 @@ class IvanovoManager(BaseManager):
 
     async def run_ivanovo_module(self):
         parsers = [
+            (stroitec.StroiTecParser, (), {'headless': False, 'err_name': ['vladimir', 'VT']}),
             (akvilon.AkvilonParser, (), {'err_name': ['all_pars', 'Akvilon']}),
             (csy.CSYParser, (), {'err_name': ['ivan', 'CSY']}),
             (default_kvartal.DefaultKvartalParser, (), {'err_name': ['ivan', 'DefaultKvartal']}),
@@ -137,6 +138,7 @@ class AllParsManager(BaseManager):
 
     async def run_all_parsers_module(self) -> str:
         parsers = [
+            (stroitec.StroiTecParser, (), {'headless': False, 'err_name': ['vladimir', 'VT']}),
             (fenix.FenixParser, (), {'headless': False, 'err_name': ['all_pars', 'Fenix']}),
             (csy.CSYParser, (), {'err_name': ['all_pars', 'CSY']}),
             (default_kvartal.DefaultKvartalParser, (), {'err_name': ['all_pars', 'DefaultKvartal']}),
