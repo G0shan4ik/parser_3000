@@ -26,9 +26,9 @@ class VTParser(BaseParserSelenium):
         self.pars_links: list[str] = []
 
         self.pars_names: list[str] = [
-            # 'Суздаль',
-            # 'Ковров',
-            'Владимир',
+            'Суздаль',
+            'Ковров',
+            # 'Владимир',
         ]
 
     @staticmethod

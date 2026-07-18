@@ -46,9 +46,9 @@ class AvitoParser(BaseParserSelenium):
         }
 
         self.pars_names: list[str] = [
+            'Vladimir',
             'Kovrov',
             'Ivanovo',
-            'Vladimir',
         ]
         self.rus_name = {
             'Kovrov': 'Ковров',
@@ -323,26 +323,26 @@ class AvitoParser(BaseParserSelenium):
         for _name in self.pars_names:
             self.site_name = _name
 
-            logger.info(f'AvitoParser ({_name}); Started authorize')
-            self.auth_avito(link=self.pars_links[_name], try_cnt=try_cnt)
-            try_cnt += 1
-            logger.success(f'AvitoParser ({_name}); SUCCESS authorize')
-
-            logger.info(f'AvitoParser ({_name}); Start Pars PAGES')
-            self.pars_all_pages(name=_name, start_url=self.pars_links[_name])
-            logger.success(f'AvitoParser ({_name}); SUCCESS Pars PAGES')
-
-            logger.info(f'AvitoParser ({_name}); Start Pars ALL_DATA')
-            self.pars_data(name=_name)
-            logger.success(f'AvitoParser ({_name}); SUCCESS Pars ALL_DATA')
-
-            # _cache = CacheCore(cache_name=f'{_name}')
-            # self.result_mass = _cache.get_all_values()
-            # self.floor_count = _cache.size()
+            # logger.info(f'AvitoParser ({_name}); Started authorize')
+            # self.auth_avito(link=self.pars_links[_name], try_cnt=try_cnt)
+            # try_cnt += 1
+            # logger.success(f'AvitoParser ({_name}); SUCCESS authorize')
             #
-            # _exel_name = f"all_exel/exel_2026-17-10/{datetime.now().date()}_{self.site_name}.xlsx"     # МЕНЯТЬ ДАТУ ПАПКИ
-            # self.to_exel(mass=self.result_mass, exel_name=_exel_name)
-            # logger.info(f'AvitoitoParser; Avito flats {_name} count == {self.floor_count}')
+            # logger.info(f'AvitoParser ({_name}); Start Pars PAGES')
+            # self.pars_all_pages(name=_name, start_url=self.pars_links[_name])
+            # logger.success(f'AvitoParser ({_name}); SUCCESS Pars PAGES')
+            #
+            # logger.info(f'AvitoParser ({_name}); Start Pars ALL_DATA')
+            # self.pars_data(name=_name)
+            # logger.success(f'AvitoParser ({_name}); SUCCESS Pars ALL_DATA')
+
+            _cache = CacheCore(cache_name=f'{_name}')
+            self.result_mass = _cache.get_all_values()
+            self.floor_count = _cache.size()
+
+            _exel_name = f"all_exel/exel_2026-17-10/{datetime.now().date()}_{self.site_name}.xlsx"     # МЕНЯТЬ ДАТУ ПАПКИ
+            self.to_exel(mass=self.result_mass, exel_name=_exel_name)
+            logger.info(f'AvitoitoParser; Avito flats {_name} count == {self.floor_count}')
 
         logger.info(f'AvitoParser; Avito flats count == {self.floor_count}')
         self.driver.sleep(randint(5, 10))

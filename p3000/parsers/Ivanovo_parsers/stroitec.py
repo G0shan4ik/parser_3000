@@ -100,9 +100,9 @@ class StroiTecParser(BaseParserSelenium):
         logger.info(f'VY; VT flats count == {self.floor_count}')
 
 
-if __name__ == '__main__':
-    per = StroiTecParser(
-        exel=True,
-        # headless=Tru,
-    )
-    per.run()
+# if __name__ == '__main__':
+#     per = StroiTecParser(
+#         exel=True,
+#         # headless=Tru,
+#     )
+#     per.run()
