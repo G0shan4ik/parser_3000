@@ -91,7 +91,7 @@ class IvanovoManager(BaseManager):
 
     async def run_ivanovo_module(self):
         parsers = [
-            (stroitec.StroiTecParser, (), {'headless': False, 'err_name': ['vladimir', 'VT']}),
+            (stroitec.StroiTecParser, (), {'headless': False, 'err_name': ['stroitec', 'StroiTec']}),
             (akvilon.AkvilonParser, (), {'err_name': ['all_pars', 'Akvilon']}),
             (csy.CSYParser, (), {'err_name': ['ivan', 'CSY']}),
             (default_kvartal.DefaultKvartalParser, (), {'err_name': ['ivan', 'DefaultKvartal']}),

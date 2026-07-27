@@ -46,8 +46,8 @@ class AvitoParser(BaseParserSelenium):
         }
 
         self.pars_names: list[str] = [
-            'Vladimir',
             'Kovrov',
+            'Vladimir',
             'Ivanovo',
         ]
         self.rus_name = {
@@ -57,7 +57,7 @@ class AvitoParser(BaseParserSelenium):
         }
 
     @staticmethod
-    def get_other_data(sp):
+    def get_othq2er_data(sp):
         rooms, full_area, kitchen_area, leave_area, floor, balkon, otd, toilet = '-', '-', '-', '-', '-', '-', '-', '-'
         new_sp = ''
         for good_teg in sp.select('ul'):
@@ -158,6 +158,37 @@ class AvitoParser(BaseParserSelenium):
             self.driver.scroll()
             self.driver.sleep(randint(1, 3))
         self.driver.sleep(randint(1, self.delay))
+
+    @staticmethod
+    def get_other_data(sp):
+        rooms, full_area, kitchen_area, leave_area, floor, balkon, otd, toilet = '-', '-', '-', '-', '-', '-', '-', '-'
+        new_sp = ''
+        for good_teg in sp.select('ul'):
+            if 'Количество комнат' in good_teg.text:
+                new_sp = good_teg
+
+        for item in new_sp.select('li'):
+            if 'Количество комнат' in item.text:
+                rooms = f"{int(item.text.replace('Количество комнат: ', ''))}К" if 'студия' not in item.text else 'СТ'
+            elif 'Общая площадь' in item.text:
+                match = re.search(r'([\d.,]+)\s*м²', item.text)
+                full_area = float(match.group(1).replace(',', '.'))
+            elif 'Площадь кухни' in item.text:
+                match = re.search(r'([\d.,]+)\s*м²', item.text)
+                kitchen_area = float(match.group(1).replace(',', '.'))
+            elif 'Жилая площадь' in item.text:
+                match = re.search(r'([\d.,]+)\s*м²', item.text)
+                leave_area = float(match.group(1).replace(',', '.'))
+            elif 'Этаж' in item.text:
+                floor = int(item.text.replace('Этаж: ', '').split(' из ')[0])
+            elif 'Балкон или лоджия' in item.text:
+                balkon = 'Л' if 'л' == item.text.split(': ')[-1][0] else 'Б'
+            elif 'Отделка' in item.text:
+                otd = 'Без отделки' if 'без' in item.text else item.text.replace('Отделка: ', '').replace('чистовая', 'Чист')
+            elif 'Санузел' in item.text:
+                balkon = 'C' if 'совмещенный' == item.text else item.text
+
+        return [rooms, full_area, kitchen_area, leave_area, floor, balkon, otd, toilet]
 
     def pars_data(self, name:str):
         # self.driver.driver.set_page_load_timeout(10)
@@ -323,26 +354,26 @@ class AvitoParser(BaseParserSelenium):
         for _name in self.pars_names:
             self.site_name = _name
 
-            # logger.info(f'AvitoParser ({_name}); Started authorize')
-            # self.auth_avito(link=self.pars_links[_name], try_cnt=try_cnt)
-            # try_cnt += 1
-            # logger.success(f'AvitoParser ({_name}); SUCCESS authorize')
-            #
-            # logger.info(f'AvitoParser ({_name}); Start Pars PAGES')
-            # self.pars_all_pages(name=_name, start_url=self.pars_links[_name])
-            # logger.success(f'AvitoParser ({_name}); SUCCESS Pars PAGES')
-            #
-            # logger.info(f'AvitoParser ({_name}); Start Pars ALL_DATA')
-            # self.pars_data(name=_name)
-            # logger.success(f'AvitoParser ({_name}); SUCCESS Pars ALL_DATA')
+            logger.info(f'AvitoParser ({_name}); Started authorize')
+            self.auth_avito(link=self.pars_links[_name], try_cnt=try_cnt)
+            try_cnt += 1
+            logger.success(f'AvitoParser ({_name}); SUCCESS authorize')
 
-            _cache = CacheCore(cache_name=f'{_name}')
-            self.result_mass = _cache.get_all_values()
-            self.floor_count = _cache.size()
+            logger.info(f'AvitoParser ({_name}); Start Pars PAGES')
+            self.pars_all_pages(name=_name, start_url=self.pars_links[_name])
+            logger.success(f'AvitoParser ({_name}); SUCCESS Pars PAGES')
 
-            _exel_name = f"all_exel/exel_2026-17-10/{datetime.now().date()}_{self.site_name}.xlsx"     # МЕНЯТЬ ДАТУ ПАПКИ
-            self.to_exel(mass=self.result_mass, exel_name=_exel_name)
-            logger.info(f'AvitoitoParser; Avito flats {_name} count == {self.floor_count}')
+            logger.info(f'AvitoParser ({_name}); Start Pars ALL_DATA')
+            self.pars_data(name=_name)
+            logger.success(f'AvitoParser ({_name}); SUCCESS Pars ALL_DATA')
+
+            # _cache = CacheCore(cache_name=f'{_name}')
+            # self.result_mass = _cache.get_all_values()
+            # self.floor_count = _cache.size()
+            #
+            # _exel_name = f"all_exel/exel_2026-07-24/{datetime.now().date()}_{self.site_name}.xlsx"     # МЕНЯТЬ ДАТУ ПАПКИ
+            # self.to_exel(mass=self.result_mass, exel_name=_exel_name)
+            # logger.info(f'AvitoitoParser; Avito flats {_name} count == {self.floor_count}')
 
         logger.info(f'AvitoParser; Avito flats count == {self.floor_count}')
         self.driver.sleep(randint(5, 10))
@@ -355,6 +386,6 @@ if __name__ == '__main__':
         exel=False,
         headless=False,
 
-        _date='17.07.2026'  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        _date='24.07.2026'  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     )
     per.run()

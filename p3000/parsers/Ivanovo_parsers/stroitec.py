@@ -95,9 +95,9 @@ class StroiTecParser(BaseParserSelenium):
             self.floor_count = len(self.result_mass)
         except Exception as ex:
             self._fatal_error = True
-            logger.error(f'Fatal ERROR VT ->\n{ex}\n\n')
+            logger.error(f'Fatal ERROR StroiTec ->\n{ex}\n\n')
 
-        logger.info(f'VY; VT flats count == {self.floor_count}')
+        logger.info(f'StroiTec; StroiTec flats count == {self.floor_count}')
 
 
 # if __name__ == '__main__':
