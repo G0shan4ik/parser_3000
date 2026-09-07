@@ -9,38 +9,39 @@ class FileModule:
     def __init__(self):
         self.merge_files_names: dict[str, list[str]] = {
             # --------------------- ДКП ---------------------
-            # "ДКП RESULT": [
-            #     r"C:\Users\Projects\my_projects\parser_3000\p3000\parsers\Avito_parser\all_exel\exel_2026-17-10\2026-07-16_Ivanovo.xlsx",
-            #     r"C:\Users\Projects\my_projects\parser_3000\p3000\parsers\Avito_parser\all_exel\exel_2026-17-10\2026-07-16_Kovrov.xlsx",
-            #     r"C:\Users\Projects\my_projects\parser_3000\p3000\parsers\Avito_parser\all_exel\exel_2026-17-10\2026-07-16_Vladimir.xlsx",
-            # ],
+            "ДКП RESULT": [
+                r"C:\Users\Projects\my_projects\parser_3000\p3000\parsers\Avito_parser\all_exel\exel_2026-09-04\2026-09-04_Ivanovo.xlsx",
+                r"C:\Users\Projects\my_projects\parser_3000\p3000\parsers\Avito_parser\all_exel\exel_2026-09-04\2026-09-04_Kovrov.xlsx",
+                r"C:\Users\Projects\my_projects\parser_3000\p3000\parsers\Avito_parser\all_exel\exel_2026-09-04\2026-09-04_Vladimir.xlsx",
+            ],
 
             # ------------------ ОМЦ Владимир ------------------
             # "ОМЦ Владимир": [
-            #     r"C:\Users\Projects\my_projects\parser_3000\p3000\parsers\Vladimir_parsers\all_exel\2026-07-23_vt.xlsx",
-            #     r"C:\Users\egork\Downloads\Telegram Desktop\2026-07-24_Vladimir.xlsx",
+            #     r"C:\Users\Projects\my_projects\parser_3000\p3000\parsers\Vladimir_parsers\all_exel\vt.xlsx",
+            #     r"C:\Users\Projects\my_projects\parser_3000\p3000\parsers\Vladimir_parsers\all_exel\2026-09-03_vt.xlsx",
+            #     r"C:\Users\Projects\my_projects\parser_3000\all_exel\2026-09-04_Vladimir.xlsx",
             # ],
 
             # ------------------ ОМЦ Иваново ------------------
-            "ОМЦ Иваново": [
-                r"C:\Users\Projects\my_projects\parser_3000\merge_files_module\нити_макет.xlsx",
-                r"C:\Users\egork\Downloads\Telegram Desktop\2026-07-24_Ivanovo.xlsx",
-            ],
+            # "ОМЦ Иваново": [
+            #     r"C:\Users\Projects\my_projects\parser_3000\merge_files_module\нити_макет.xlsx",
+            #     r"C:\Users\Projects\my_projects\parser_3000\all_exel\2026-09-04_Ivanovo.xlsx",
+            # ],
         }
 
         self.file_name: dict[str, str] = {
             # "ОМЦ Владимир RESULT": (
-            #     r"C:\Users\Projects\my_projects\parser_3000\merge_files_module\result_files\24.07.2026\ОМЦ Владимир.xlsx"
+            #     r"C:\Users\Projects\my_projects\parser_3000\merge_files_module\result_files\04.09.2026\ОМЦ Владимир.xlsx"
             # ),
 
-            "ОМЦ Иваново RESULT": (
-                r"C:\Users\Projects\my_projects\parser_3000\merge_files_module\result_files\24.07.2026\ОМЦ Иваново.xlsx"
-            ),
+            # "ОМЦ Иваново RESULT": (
+            #     r"C:\Users\Projects\my_projects\parser_3000\merge_files_module\result_files\04.09.2026\ОМЦ Иваново.xlsx"
+            # ),
         }
 
         self.add_column_data: dict = {
             "column_name": "Дата",
-            "column_data": "24.07.2026",
+            "column_data": "04.09.2026",
         }
 
 
@@ -179,4 +180,5 @@ if __name__ == "__main__":
     fm.merge_excel_files()
 
     # Добавление столбца во все файлы из self.file_name
-    fm.add_first_column()
+    # fm.add_first_column()
+

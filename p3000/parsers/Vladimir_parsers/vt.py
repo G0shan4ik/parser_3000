@@ -1,3 +1,5 @@
+from pprint import pprint
+
 from loguru import logger
 from bs4 import BeautifulSoup
 import lxml
@@ -26,7 +28,7 @@ class VTParser(BaseParserSelenium):
         self.pars_links: list[str] = []
 
         self.pars_names: list[str] = [
-            # 'Суздаль',
+            'Суздаль',
             # 'Ковров',
             'Владимир',
         ]
@@ -78,7 +80,7 @@ class VTParser(BaseParserSelenium):
 
 
             # Суздаль
-            elif 'Мечта' in name:
+            elif 'мечта' in name.lower():
                 return 'Мечта'
             elif 'всполье' in name:
                 return f'Всполье 1 оч. корп. {name[-1]}'.strip()
@@ -185,16 +187,21 @@ class VTParser(BaseParserSelenium):
         except Exception as ex:
             logger.warning(f'VT; !!! Change name err ({name}) !!! \n{ex} ')
 
-    def parse_flat_info(self, text: str, info_gk: [str], prices: [str]) -> dict:
-        try:
-            gk_name = self.change_gk_name(info_gk[0].strip().capitalize())
+    def parse_flat_info(self, sp) -> dict:
+        info_gk = ''
+        try: #
+            info_gk = sp.select_one('app-cdk-cell.app-cdk-cell.cdk-column-new-builder.app-cdk-column-new-builder.resizing.ng-star-inserted > app-eav-cell').get('title').strip().capitalize()
+            print(info_gk)
+            gk_name = self.change_gk_name(info_gk)
             # print(info_gk[0].strip().capitalize(), '  <--->  ', gk_name)
+
             if gk_name == '':
-                logger.warning(f'VT; GK_Name dont exists (name #{info_gk[0].strip().capitalize()}#)')
+                logger.warning(f'VT; GK_Name dont exists (name #{info_gk}#)')
                 return {}
 
-            price_full = int(prices[0].replace(' ₽', '').replace(' ', ''))
-            price_m = int(prices[-1].replace('₽/м²', '').replace(' ', ''))
+            price_full = int(sp.select_one('app-cdk-cell.app-cdk-cell.cdk-column-price.app-cdk-column-price.resizing.ng-star-inserted > app-eav-cell').get('title').replace(' ', '').split(',')[0])
+            price_m = int(sp.select_one('app-cdk-cell.app-cdk-cell.cdk-column-price_quad_meter.app-cdk-column-price_quad_meter.resizing.ng-star-inserted > app-eav-cell').get('title').replace(' ', '').split(',')[0])
+
             dct = {
                 'Тип': '-',
                 'S общ': round(float(price_full/price_m), 1),
@@ -216,69 +223,109 @@ class VTParser(BaseParserSelenium):
             }
 
             # --- Тип квартиры ---
-            # Студия
-            if re.search(r'\bстудия\b', text, re.I):
-                dct['Тип'] = 'СТ'
-            # N-комнатная
-            else:
-                m_rooms = re.search(r'(\d+)[-– ]*комн', text, re.I)
-                if m_rooms:
-                    dct['Тип'] = f"{m_rooms.group(1)}К"
+            tp = ''
+            try:
+                tp = sp.select_one('app-cdk-cell.app-cdk-cell.cdk-column-rooms.app-cdk-column-rooms.resizing.ng-star-inserted > app-eav-cell').get('title')
+            except:
+                ...
+            if tp:
+                dct['Тип'] = 'СТ' if 'тудия' in tp else f'{tp}К'
+                # if dct['Тип'] == 'СтудияК':
 
-            # --- Этаж ---
-            m_floor = re.search(r'(\d+)\s*/\s*\d+\s*эт', text, re.I)
-            if m_floor:
-                dct['Этаж'] = int(m_floor.group(1))
-
-            # --- Площади ---
-            # Формат 40.53/11.6/16.4 м²
-            m_area_full = re.search(r'([\d,.]+)/([\d,.]+)/([\d,.]+)\s*м²', text)
-            if m_area_full:
-                total, living, kitchen = m_area_full.groups()
-                # dct['S общ'] = float(total.replace(',', '.'))
-                dct['S жил'] = float(living.replace(',', '.'))
-                dct['S кухни'] = float(kitchen.replace(',', '.'))
-            # else:
-            #     # Формат только 40.53 м²
-            #     m_area_simple = re.search(r'([\d,.]+)\s*м²', text)
-            #     if m_area_simple:
-            #         dct['S общ'] = round(float(, 1))
-
-            # --- Год сдачи ---
-            m_year = re.search(r'(\d{4})\s*г', text)
-            if m_year:
-                dct['Сдача'] = int(m_year.group(1))
             if dct['Тип'] == '-':
                 logger.warning(f'VT; Skip flat (dont such type flat)')
                 return {}
+            # --- Этаж ---
+            m_floor = None
+            try:
+                m_floor = sp.select_one('app-cdk-cell.app-cdk-cell.cdk-column-floor.app-cdk-column-floor.resizing.ng-star-inserted > app-eav-cell').get('title')
+            except:
+                ...
+            if m_floor:
+                dct['Этаж'] = int(m_floor)
+
+            # --- Площади ---
+            # Формат 40.53/11.6/16.4 м²
+            total, living, kitchen = 0, 0, 0
+            try:
+                total = sp.select_one(
+                    'app-cdk-cell.app-cdk-cell.cdk-column-total_area.app-cdk-column-total_area.resizing.ng-star-inserted > app-eav-cell').get('title').replace(',', '.')
+            except:
+                ...
+            try:
+                living = sp.select_one(
+                    'app-cdk-cell.app-cdk-cell.cdk-column-living_area.app-cdk-column-living_area.resizing.ng-star-inserted > app-eav-cell').get('title').replace(',', '.')
+            except:
+                ...
+            try:
+                kitchen = sp.select_one(
+                    'app-cdk-cell.app-cdk-cell.cdk-column-sq_kitchen.app-cdk-column-sq_kitchen.resizing.ng-star-inserted > app-eav-cell').get('title').replace(',', '.')
+            except:
+                ...
+
+            dct['S общ'] = float(total) if total else '-'
+            dct['S жил'] = float(living) if living else '-'
+            dct['S кухни'] = float(kitchen) if kitchen else '-'
+            # --- Год сдачи ---
+            m_year = ''
+            try:
+                m_year = sp.select_one('app-cdk-cell.app-cdk-cell.cdk-column-ddu_date.app-cdk-column-ddu_date.resizing.ng-star-inserted > app-eav-cell').get('title')
+            except:
+                ...
+            if m_year:
+                dct['Сдача'] = int(m_year.split('.')[-1])
+
+
             return dct
         except Exception as ex:
-            logger.warning(f'VT; err text == {text}; info_gk == {info_gk}; prices == {prices};\n {ex}')
+            logger.warning(f'VT; err text {info_gk}; EX: {ex}')
 
-    def auth_by_name(self, name: str):
+    def auth_by_name(self, name: str, _part: int):
         try:
-            self.driver.wait_for_element('button.chip-button.nowrap.button-only', wait=10)
-            self.driver.run_js("document.querySelector('button.chip-button.nowrap.button-only').click()")
-            print('---- Settings')
-            self.driver.sleep(2)
-            self.driver.run_js('''[...document.querySelectorAll('span.app-button-wrapper')].find(el => el.textContent.includes('Сбросить'))?.click();''')
+            if _part == 0:
+                self.driver.wait_for_element('button.chip-button.nowrap.button-only', wait=10)
+                self.driver.run_js(
+                    '''
+    const buttons = document.querySelectorAll('button[aria-describedby="cdk-describedby-message-ng-1-3"]');
+    buttons[1]?.click();'''
+                )
+                self.driver.sleep(1)
+                self.driver.run_js('''document.querySelector('div.map.flex.align-center.gap-6.justify-between.pointer > app-toggle > div').click()''')
+                self.driver.sleep(2)
+                self.driver.run_js("""
+                    const items = document.querySelectorAll('div.item-container.selectable.check-end');
+                    items[items.length - 1]?.click();
+                """)
+                self.driver.sleep(1)
+
+                self.driver.run_js("document.querySelector('button.chip-button.nowrap.button-only').click()")
+                print('---- Settings')
+                self.driver.sleep(2)
+            else:
+                self.driver.run_js(
+                    '''
+const p = document.querySelectorAll('button.chip-button.nowrap.button-only')
+p[0]?.click()'''
+                )
+            self.driver.run_js('''[...document.querySelectorAll('div.mat-mdc-tooltip-trigger.secondary-button.medium')].find(el => el.textContent.includes('Сбросить'))?.click();''')
             print('---- Resset settings')
             self.driver.sleep(2)
-            self.driver.run_js('''[...document.querySelectorAll('span')].find(el => el.textContent.includes('Квартира во вторичке, Квартира в новостройке'))?.click();''')
-            print('---- Open burger')
-            self.driver.sleep(2)
-            self.driver.run_js("document.querySelector('span.app-option-text').click()")
-            print('---- delete filter')
-            self.driver.sleep(2)
-            self.driver.run_js('''document.querySelector('button.location-switcher.app-stroked-button.app-button-base.medium.light-gray').click()''')
+
+            # self.driver.run_js('''[...document.querySelectorAll('span')].find(el => el.textContent.includes('Квартира во вторичке'))?.click();''')
+            # print('---- delete filter')
+            # self.driver.sleep(2)
+
+            self.driver.run_js('''[...document.querySelectorAll('span')].find(el => el.textContent.includes('Не выбран'))?.click();''')
             print('---- Go into country')
             self.driver.sleep(3)
+
             self.driver.run_js('''[...document.querySelectorAll('div.areas__item.ng-star-inserted')].find(el => el.textContent.includes('Россия'))?.click();''')
             print('---- Select Russia')
             self.driver.sleep(3)
             self.driver.run_js(
                 '''[...document.querySelectorAll('div.areas__item.ng-star-inserted')].find(el => el.textContent.includes('Владимирская'))?.click();''')
             print('---- Select Vladimirskaya')
+
 
             query = '''[...document.querySelectorAll('div.areas__item')].find(el => el.textContent.includes('Владимир'))?.click();'''
 
@@ -291,37 +338,40 @@ class VTParser(BaseParserSelenium):
             self.driver.run_js(query)
             print(f'---- SELECT NAME == {name}')
             self.driver.sleep(3)
-            self.driver.run_js('''[...document.querySelectorAll('span.app-button-wrapper')].find(el => el.textContent.includes('Показать'))?.click();''',)
+            self.driver.run_js('''document.querySelector('button.app-flat-button.app-button-base.green.medium.searchButton').click()''',)
             print(f'---- Select view')
             self.driver.sleep(3)
-            self.driver.run_js('''document.querySelector('button.app-flat-button.app-button-base.medium.green.ng-star-inserted').click()''')
+            self.driver.run_js('''document.querySelector('div.footer.flex.align-center.justify-between > div > button:last-child').click()''')
             print(f'---- Select commit')
             self.driver.sleep(4)
         except Exception as ex:
             logger.warning(f"VT; Error auth name (NAME == {name})\n {ex}")
 
     def pars_data(self):
+        _part = 0
         for name in self.pars_names:
             self.driver.get('https://is.vt24.ru/object-realty-new')
             self.driver.sleep(4)
             try:
-                self.auth_by_name(name=name)
+
+                # self.driver.prompt()
+
+                self.auth_by_name(name=name, _part=_part)
+                _part += 1
+
                 self.driver.sleep(4)
 
-                self.driver.wait_for_element('div.relation-card-wrapper', wait=10)
+
+                self.driver.wait_for_element('div.app-cdk-header-row', wait=10)
                 self.driver.sleep(1)
-                # soup = BeautifulSoup(self.driver.page_html, 'lxml')
-                # self.floor_count = int(soup.select_one('div.objects-count').text.split()[0])
+
                 logger.info(f"VT; ALL Items == {self.floor_count}")
                 try:
-                    while True:
-                        for num in range(77777):
-                            logger.info(f'VT; Iteration number {num}')
-                            self.driver.run_js(
-                                "document.querySelector('div.load-more-button-component.border-radius-4.flex.justify-center.p-10').click()")
-                            self.driver.sleep(2)
-                            # break
-                        # break
+                    for num in range(150):
+                        logger.info(f'VT; Iteration number {num}')
+                        self.driver.run_js(
+                            "document.querySelector('div.load-more-button-component.border-radius-4.flex.justify-center.p-10').click()")
+                        self.driver.sleep(2)
                 except:
                     ...
 
@@ -329,25 +379,17 @@ class VTParser(BaseParserSelenium):
 
                 self.driver.sleep(4)
                 soup = BeautifulSoup(self.driver.page_html, 'lxml')
-                # with open(f'a.html', 'w') as file:
-                #     file.write(str(soup))
+
                 cnt_real, cnt_good = 0, 0
-                for item in soup.select_one('div.container-search-box').select('relation-card-wrapper'):
+                for item in soup.select('app-cdk-row'):
                     try:
-                        cnt_real += 1 #tag grey string-truncate
-                        if 'От застройщика' not in item.select_one("div.tag.grey.string-truncate").text:
+                        cnt_real += 1
+
+                        if not item.select_one("app-cdk-cell.app-cdk-cell.cdk-column-is_module_sn_24.app-cdk-column-is_module_sn_24.resizing.ng-star-inserted").text:
                             logger.info(f"ZASTROISHIK SKIP")
                             continue
-                        dct = self.parse_flat_info(
-                            text=item.select_one('span.mr-4').text,
-                            info_gk=[
-                                item.select_one('a.nb-title.font-size-12.line-height-16.string-truncate.ng-star-inserted').text,
-                            ],
-                            prices=[
-                                item.select_one('span.font-size-16.font-weight-600.line-height-24.string-truncate').text,
-                                item.select_one('span.secondary-color.font-size-11.line-height-16').text
-                            ],
-                        )
+
+                        dct = self.parse_flat_info(item)
                         if dct:
                             cnt_good += 1
                             logger.info(f'VT; Pars Flat --- {dct["ЖК, оч. и корп."]}')
@@ -355,9 +397,8 @@ class VTParser(BaseParserSelenium):
                                 dct
                             )
                             continue
-                        logger.info(f"https://is.vt24.ru/{item.select('a')[-1].get('href')}")
                     except :
-                        logger.info(f"--- SKIP; https://is.vt24.ru/{item.select('a')[-1].get('href')}")
+                        logger.info(f"--- SKIP; {name}")
 
                 # self.pars_links = [f'https://is.vt24.ru{item.get("href")}' for item in soup.select_one('div.container-search-box').select('a') if 'object-realty-new' in item.get("href")]
                 # for link in self.pars_links:

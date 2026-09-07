@@ -1,5 +1,7 @@
 import asyncio
 import re
+import time
+
 from requests import Session
 
 from loguru import logger
@@ -46,7 +48,7 @@ class AkvilonParser(BaseParserRequests):
                 response = _session.post(self.token_url, json=self.payload, headers=self.headers)
                 if response.status_code == 200:
                     self.bearer = response.json()['access_token']
-                    logger.success('Aviator; Pars Bearer')
+                    logger.success('Akvilon; Pars Bearer')
                 else:
                     self._fatal_error = True
                     asyncio.run(self.update_err(error="AkvilonParser // Invalid Bearer  -  "))
@@ -54,7 +56,7 @@ class AkvilonParser(BaseParserRequests):
                     return
 
                 response_data = _session.get(
-                    url='https://pb20569.profitbase.ru/api/v4/json/property?houseId=145409&returnFilteredCount=true',
+                    url='https://pb20569.profitbase.ru/api/v4/json/property?propertyTypeAliases%5B0%5D=property&status%5B0%5D=AVAILABLE&limit=50&full=true&returnFilteredCount=true',
                     headers = {
                     "authorization": f"Bearer {self.bearer}",
                     "Accept": "application/json, text/plain, */*",
@@ -63,36 +65,60 @@ class AkvilonParser(BaseParserRequests):
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 YaBrowser/25.12.0.0 Safari/537.36"
                     }
                 )
-                from pprint import pprint
                 data = response_data.json()
-                for item in data['data']['properties']:
-                    try:
-                        logger.info(f'Akvilon {item["status"] if item["status"] != "AVAILABLE" else item["status"] + " pars!"}')
-                        if item['status'] == 'AVAILABLE':
-                            self.result_mass.append(
-                                {
-                                    "Тип": f"{item['rooms_amount']}К" if item['rooms_amount'] != 0 else 'СТ',
-                                    "S общ": item['area']['area_total'],
-                                    "S жил": item['area']['area_living'],
-                                    "S кухни": item['area']['area_kitchen'],
-                                    "Отд.": '-',
-                                    "С/у": '-',
-                                    "Балкон": '-',
-                                    "Этаж": item['floor'],
-                                    "№ объекта": int(item['number']),
-                                    "ЖК, оч. и корп.": 'ЖК Манифест',
-                                    "Продавец": 'Akvilon',
-                                    "Район": '-',
-                                    "Сдача": '-',
-                                    "Цена 100%": int(item['price']['value']),
-                                    "за м2": int(item['price']['pricePerMeter']),
-                                    "Баз. цена": '-',
-                                    "Вознаграж.": '',
+
+                if data['data']['filteredCount'] % 50 == 0:
+                    rng = data['data']['filteredCount'] // 5
+                else:
+                    rng = data['data']['filteredCount'] // 5 + 1
+
+                for idx in range(rng):
+                    if idx == 0:
+                        ...
+                    else:
+                        try:
+                            response_data = _session.get(
+                                url=f'https://pb20569.profitbase.ru/api/v4/json/property?propertyTypeAliases%5B0%5D=property&status%5B0%5D=AVAILABLE&limit=50&offset={50*idx}&full=true&returnFilteredCount=true',
+                                headers={
+                                    "authorization": f"Bearer {self.bearer}",
+                                    "Accept": "application/json, text/plain, */*",
+                                    "Origin": "https://smart-catalog.profitbase.ru",
+                                    "Referer": "https://smart-catalog.profitbase.ru/",
+                                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 YaBrowser/25.12.0.0 Safari/537.36"
                                 }
                             )
-                    except Exception as ex:
-                        asyncio.run(self.update_err(error="AkvilonParser: " + str(ex)))
-                        logger.warning(f'''Invalid link Akvilon: {item}\nExeption: {ex}\n''')
+                            data = response_data.json()
+                        except:
+                            logger.warning(f'''ERROR PAGE REQUESTS Akvilon: idx:{idx}\nExeption: {ex}\n''')
+
+                    for item in data['data']['properties']:
+                        try:
+                            logger.info(f'Akvilon {item["status"] if item["status"] != "AVAILABLE" else item["status"] + " pars!"}')
+                            if item['status'] == 'AVAILABLE':
+                                self.result_mass.append(
+                                    {
+                                        "Тип": f"{item['rooms_amount']}К" if item['rooms_amount'] != 0 else 'СТ',
+                                        "S общ": item['area']['area_total'],
+                                        "S жил": item['area']['area_living'],
+                                        "S кухни": item['area']['area_kitchen'],
+                                        "Отд.": '-',
+                                        "С/у": '-',
+                                        "Балкон": '-',
+                                        "Этаж": item['floor'],
+                                        "№ объекта": int(item['number']),
+                                        "ЖК, оч. и корп.": 'ЖК Манифест',
+                                        "Продавец": 'Akvilon',
+                                        "Район": '-',
+                                        "Сдача": '-',
+                                        "Цена 100%": int(item['price']['value']),
+                                        "за м2": int(item['price']['pricePerMeter']),
+                                        "Баз. цена": '-',
+                                        "Вознаграж.": '',
+                                    }
+                                )
+                        except Exception as ex:
+                            asyncio.run(self.update_err(error="AkvilonParser: " + str(ex)))
+                            logger.warning(f'''Invalid link Akvilon: {item}\nExeption: {ex}\n''')
         except Exception as ex:
             self._fatal_error = True
             asyncio.run(self.update_err(error="AkvilonParser // Fatal ERROR  -  " + str(ex)))
@@ -106,3 +132,4 @@ if __name__ == '__main__':
         exel=True
     )
     per.run()
+
