@@ -1,6 +1,7 @@
 import asyncio
 import re
 import time
+from pprint import pprint
 
 from requests import Session
 
@@ -92,9 +93,20 @@ class AkvilonParser(BaseParserRequests):
                             logger.warning(f'''ERROR PAGE REQUESTS Akvilon: idx:{idx}\nExeption: {ex}\n''')
 
                     for item in data['data']['properties']:
+                        pprint(data['data']['properties'])
+                        time.sleep(1000)
                         try:
                             logger.info(f'Akvilon {item["status"] if item["status"] != "AVAILABLE" else item["status"] + " pars!"}')
                             if item['status'] == 'AVAILABLE':
+                                gk = ''
+                                if item['houseName'] == 'ЖК Манифест блок А 1 этап':
+                                    gk = 'ЖК Манифест, 1 очередь'
+                                elif item['houseName'] == 'ЖК Манифест блок А 2 этап':
+                                    gk = 'ЖК Манифест, 2 очередь'
+
+                                if gk:
+                                    logger.warning(f'''Invalid ----GK---- Akvilon: {item['houseName']}\n\n''')
+
                                 self.result_mass.append(
                                     {
                                         "Тип": f"{item['rooms_amount']}К" if item['rooms_amount'] != 0 else 'СТ',
@@ -106,7 +118,7 @@ class AkvilonParser(BaseParserRequests):
                                         "Балкон": '-',
                                         "Этаж": item['floor'],
                                         "№ объекта": int(item['number']),
-                                        "ЖК, оч. и корп.": 'ЖК Манифест',
+                                        "ЖК, оч. и корп.": gk,
                                         "Продавец": 'Akvilon',
                                         "Район": '-',
                                         "Сдача": '-',
