@@ -93,8 +93,7 @@ class AkvilonParser(BaseParserRequests):
                             logger.warning(f'''ERROR PAGE REQUESTS Akvilon: idx:{idx}\nExeption: {ex}\n''')
 
                     for item in data['data']['properties']:
-                        pprint(data['data']['properties'])
-                        time.sleep(1000)
+
                         try:
                             logger.info(f'Akvilon {item["status"] if item["status"] != "AVAILABLE" else item["status"] + " pars!"}')
                             if item['status'] == 'AVAILABLE':
