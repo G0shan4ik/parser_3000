@@ -1,4 +1,5 @@
 from pprint import pprint
+from typing import Optional
 
 from loguru import logger
 from bs4 import BeautifulSoup
@@ -28,9 +29,9 @@ class VTParser(BaseParserSelenium):
         self.pars_links: list[str] = []
 
         self.pars_names: list[str] = [
-            'Суздаль',
-            # 'Ковров',
-            'Владимир',
+            # 'Суздаль',
+            'Ковров',
+            # 'Владимир',
         ]
 
     @staticmethod
@@ -187,7 +188,7 @@ class VTParser(BaseParserSelenium):
         except Exception as ex:
             logger.warning(f'VT; !!! Change name err ({name}) !!! \n{ex} ')
 
-    def parse_flat_info(self, sp) -> dict:
+    def parse_flat_info(self, sp) -> Optional[dict]:
         info_gk = ''
         try: #
             info_gk = sp.select_one('app-cdk-cell.app-cdk-cell.cdk-column-new-builder.app-cdk-column-new-builder.resizing.ng-star-inserted > app-eav-cell').get('title').strip().capitalize()
@@ -230,7 +231,8 @@ class VTParser(BaseParserSelenium):
                 ...
             if tp:
                 dct['Тип'] = 'СТ' if 'тудия' in tp else f'{tp}К'
-                # if dct['Тип'] == 'СтудияК':
+                if dct['Тип'] == '5К':
+                    return None
 
             if dct['Тип'] == '-':
                 logger.warning(f'VT; Skip flat (dont such type flat)')
@@ -297,7 +299,6 @@ class VTParser(BaseParserSelenium):
                     items[items.length - 1]?.click();
                 """)
                 self.driver.sleep(1)
-
                 self.driver.run_js("document.querySelector('button.chip-button.nowrap.button-only').click()")
                 print('---- Settings')
                 self.driver.sleep(2)
@@ -307,7 +308,8 @@ class VTParser(BaseParserSelenium):
 const p = document.querySelectorAll('button.chip-button.nowrap.button-only')
 p[0]?.click()'''
                 )
-            self.driver.run_js('''[...document.querySelectorAll('div.mat-mdc-tooltip-trigger.secondary-button.medium')].find(el => el.textContent.includes('Сбросить'))?.click();''')
+            self.driver.run_js('''[...document.querySelectorAll('div.mat-mdc-tooltip-trigger.primary-button.flex.align-center.justify-center.gap-4.medium.neutral')].find(el => el.textContent.includes('Сбросить'))?.click();''')
+            #[...document.querySelectorAll('div.mat-mdc-tooltip-trigger.primary-button.flex.align-center.justify-center.gap-4.medium.neutral')].find(el => el.textContent.includes('Сбросить'))?.click();
             print('---- Resset settings')
             self.driver.sleep(2)
 

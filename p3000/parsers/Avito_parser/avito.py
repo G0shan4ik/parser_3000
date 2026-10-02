@@ -46,9 +46,9 @@ class AvitoParser(BaseParserSelenium):
         }
 
         self.pars_names: list[str] = [
-            'Kovrov',
-            'Vladimir',
             'Ivanovo',
+            'Vladimir',
+            'Kovrov',
         ]
         self.rus_name = {
             'Kovrov': 'Ковров',
@@ -160,6 +160,10 @@ class AvitoParser(BaseParserSelenium):
         self.driver.sleep(randint(1, self.delay))
 
     @staticmethod
+    def parse_number(value: str) -> int:
+        return int(value.replace("\xa0", "").replace('₽', ''))
+
+    @staticmethod
     def get_other_data(sp):
         rooms, full_area, kitchen_area, leave_area, floor, balkon, otd, toilet = '-', '-', '-', '-', '-', '-', '-', '-'
         new_sp = ''
@@ -192,7 +196,7 @@ class AvitoParser(BaseParserSelenium):
 
     def pars_data(self, name:str):
         # self.driver.driver.set_page_load_timeout(10)
-        try:
+        # try:
             _cache = CacheCore(cache_name=f'{name}')
 
             _all_pars_card_url = _cache.get()
@@ -249,6 +253,13 @@ class AvitoParser(BaseParserSelenium):
                         logger.warning(f'Avito ({name}); Not ---  ZASTROY  {__num} --- {card_link}')
                         continue
 
+                    soup = BeautifulSoup(self.driver.page_html, 'lxml')
+                    price = 0
+                    try:
+                        price = self.parse_number(soup.select_one('input[id="cost"]').get('value'))
+                    except:
+                        print(soup.select_one('span[data-market="item-view/item-price"]'))
+                        price = self.parse_number(soup.select_one('span[data-market="item-view/item-price"]').text)
                     dct = {
                         'Дата': self._date,
                         'Город': self.rus_name[name],
@@ -263,10 +274,11 @@ class AvitoParser(BaseParserSelenium):
                         '№ объекта': '-',
                         'ЖК, оч. и корп.': gk,
                         'Продавец': 'Игротек' if zastroy.strip() == 'ЖК Заречье парк' else zastroy,
-                        'Район': soup.select_one('div[itemprop="address"]').text,
+                        # 'Район': soup.select_one('div[itemprop="address"]').text,
+                        'Район': soup.select_one('div#item-view-address').select_one('span').text,
                         'Сдача': sdacha,
-                        'Цена 100%': int(soup.select_one('span[itemprop="price"]').get('content')),
-                        'за м2': int(int(soup.select_one('span[itemprop="price"]').get('content')) / full_area),
+                        'Цена 100%': price,
+                        'за м2': int(price / full_area),
                         'Баз. цена': '-',
                         'Вознаграж.': ''
                     }
@@ -297,8 +309,8 @@ class AvitoParser(BaseParserSelenium):
 
             self.result_mass = _cache.get_all_values()
             self.floor_count = _cache.size()
-        except Exception as ex:
-            logger.warning(f'Warning link : {ex}')
+        # except Exception as ex:
+        #     logger.warning(f'Warning link : {ex}')
 
     def pars_all_pages(self, name: str, start_url: str):
         _cache = CacheCore(cache_name=f'{name}')
@@ -354,26 +366,26 @@ class AvitoParser(BaseParserSelenium):
         for _name in self.pars_names:
             self.site_name = _name
 
-            logger.info(f'AvitoParser ({_name}); Started authorize')
-            self.auth_avito(link=self.pars_links[_name], try_cnt=try_cnt)
-            try_cnt += 1
-            logger.success(f'AvitoParser ({_name}); SUCCESS authorize')
+            # logger.info(f'AvitoParser ({_name}); Started authorize')
+            # self.auth_avito(link=self.pars_links[_name], try_cnt=try_cnt)
+            # try_cnt += 1
+            # logger.success(f'AvitoParser ({_name}); SUCCESS authorize')
 
-            logger.info(f'AvitoParser ({_name}); Start Pars PAGES')
-            self.pars_all_pages(name=_name, start_url=self.pars_links[_name])
-            logger.success(f'AvitoParser ({_name}); SUCCESS Pars PAGES')
+            # logger.info(f'AvitoParser ({_name}); Start Pars PAGES')
+            # self.pars_all_pages(name=_name, start_url=self.pars_links[_name])
+            # logger.success(f'AvitoParser ({_name}); SUCCESS Pars PAGES')
 
-            logger.info(f'AvitoParser ({_name}); Start Pars ALL_DATA')
-            self.pars_data(name=_name)
-            logger.success(f'AvitoParser ({_name}); SUCCESS Pars ALL_DATA')
+            # logger.info(f'AvitoParser ({_name}); Start Pars ALL_DATA')
+            # self.pars_data(name=_name)
+            # logger.success(f'AvitoParser ({_name}); SUCCESS Pars ALL_DATA')
 
-            # _cache = CacheCore(cache_name=f'{_name}')
-            # self.result_mass = _cache.get_all_values()
-            # self.floor_count = _cache.size()
-            #
-            # _exel_name = f"all_exel/exel_2026-07-24/{datetime.now().date()}_{self.site_name}.xlsx"     # МЕНЯТЬ ДАТУ ПАПКИ
-            # self.to_exel(mass=self.result_mass, exel_name=_exel_name)
-            # logger.info(f'AvitoitoParser; Avito flats {_name} count == {self.floor_count}')
+            _cache = CacheCore(cache_name=f'{_name}')
+            self.result_mass = _cache.get_all_values()
+            self.floor_count = _cache.size()
+
+            _exel_name = f"all_exel/exel_2026-10-02/{datetime.now().date()}_{self.site_name}.xlsx"     # МЕНЯТЬ ДАТУ ПАПКИ
+            self.to_exel(mass=self.result_mass, exel_name=_exel_name)
+            logger.info(f'AvitoitoParser; Avito flats {_name} count == {self.floor_count}')
 
         logger.info(f'AvitoParser; Avito flats count == {self.floor_count}')
         self.driver.sleep(randint(5, 10))
@@ -386,6 +398,6 @@ if __name__ == '__main__':
         exel=False,
         headless=False,
 
-        _date='24.07.2026'  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        _date='02.10.2026'  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     )
     per.run()

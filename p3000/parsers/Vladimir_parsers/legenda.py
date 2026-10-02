@@ -93,6 +93,9 @@ class LegendaParser(BaseParserSelenium):
                         otd = payload[18].text[:4]
                         sdacha = payload[22].text.replace(' года', '').replace('кв', 'кв.')
 
+                    if '5' in val_type:
+                        continue
+
                     for floor in self.get_valid_floor(payload[8 + cnt].text):
                         self.result_mass.append(
                             {

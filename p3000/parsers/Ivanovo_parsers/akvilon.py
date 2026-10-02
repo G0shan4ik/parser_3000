@@ -98,12 +98,12 @@ class AkvilonParser(BaseParserRequests):
                             logger.info(f'Akvilon {item["status"] if item["status"] != "AVAILABLE" else item["status"] + " pars!"}')
                             if item['status'] == 'AVAILABLE':
                                 gk = ''
-                                if item['houseName'] == 'ЖК Манифест блок А 1 этап':
+                                if 'ЖК Манифест блок А 1 этап' in item['houseName']:
                                     gk = 'ЖК Манифест, 1 очередь'
-                                elif item['houseName'] == 'ЖК Манифест блок А 2 этап':
+                                elif 'ЖК Манифест блок А 2 этап' in item['houseName']:
                                     gk = 'ЖК Манифест, 2 очередь'
 
-                                if gk:
+                                if not gk:
                                     logger.warning(f'''Invalid ----GK---- Akvilon: {item['houseName']}\n\n''')
 
                                 self.result_mass.append(

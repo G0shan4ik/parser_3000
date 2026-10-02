@@ -117,7 +117,7 @@ class VladimirManager(BaseManager):
 
     async def run_vladimir_module(self) -> str:
         parsers = [
-            (vt.VTParser, (), {'headless': False, 'err_name': ['vladimir', 'VT']}),
+            # (vt.VTParser, (), {'headless': False, 'err_name': ['vladimir', 'VT']}),
             (vladimir_sk.VladimirParser, (), {'err_name': ['vladimir', 'VladimirSK']}),
             (glorax.GloraxParser, (), {'err_name': ['vladimir', 'Glorax']}),
             (aviator.AviatorParser, (), {'err_name': ['vladimir', 'Aviator']}),

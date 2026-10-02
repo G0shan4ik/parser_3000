@@ -110,6 +110,9 @@ class VladimirParser(BaseAsyncParserRequests):
                         if 'Сталинградский бульвар 8Б' in gk_name:
                             gk_name = 'ЖК Сталинградский бульвар, 8Б'
 
+                        if '5' in self.__rooms_pattern[item['rooms_count']]:
+                            continue
+
                         self.result_mass.append(
                             {
                                 "Тип": self.__rooms_pattern[item['rooms_count']],

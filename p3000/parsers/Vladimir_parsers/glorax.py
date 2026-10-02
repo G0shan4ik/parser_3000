@@ -97,6 +97,8 @@ class GloraxParser(BaseAsyncParserRequests):
                             await self.session.request.get(f'https://glorax.com/flats/{item["id"]}')
                         ).text()
                     )
+                    if '5' in f'{item["rooms"]}К':
+                        continue
 
                     self.result_mass.append(
                         {
