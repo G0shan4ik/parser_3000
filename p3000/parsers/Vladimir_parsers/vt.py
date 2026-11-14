@@ -1,4 +1,5 @@
 from pprint import pprint
+from random import randint
 from typing import Optional
 
 from loguru import logger
@@ -29,9 +30,9 @@ class VTParser(BaseParserSelenium):
         self.pars_links: list[str] = []
 
         self.pars_names: list[str] = [
+            'Владимир',
+            # 'Ковров',
             # 'Суздаль',
-            'Ковров',
-            # 'Владимир',
         ]
 
     @staticmethod
@@ -46,11 +47,23 @@ class VTParser(BaseParserSelenium):
                 return 'Квартал нового тысячелетия 1 оч. корп.1'
             elif not name:
                 return ''
+            elif 'жк трилогия' in name.lower():
+                return ''
 
             elif 'восток, к1 добросельская д.178' in name.lower():
                 return 'Восток 1 оч. корп. 1'
             elif 'восток, к2 добросельская д.180' in name.lower():
                 return 'Восток 2 оч. корп. 2'
+            elif 'жк левитан, 1' in name.lower():
+                return 'ЖК Левитан'
+            elif 'жк столетов, 2' in name.lower():
+                return 'ЖК Столетов'
+            # elif 'жк трилогия, красный дом' in name.lower():
+            #     return 'ЖК Трилогия. Красный дом'
+            # elif 'жк трилогия, зеленый дом' in name.lower():
+            #     return 'ЖК Трилогия. Зеленый дом'
+            # elif 'жк трилогия, синий дом' in name.lower():
+            #     return 'ЖК Трилогия. Синий дом'
             #
 
             # Ковров
@@ -168,6 +181,8 @@ class VTParser(BaseParserSelenium):
             elif 'мичурина' in name:
                 return ''
             elif 'Таунхаусы' in name:
+                return ''
+            elif 'погодинъ' in name.lower():
                 return ''
 
             # elif 'Эталон' in name:
@@ -288,20 +303,20 @@ class VTParser(BaseParserSelenium):
                 self.driver.wait_for_element('button.chip-button.nowrap.button-only', wait=10)
                 self.driver.run_js(
                     '''
-    const buttons = document.querySelectorAll('button[aria-describedby="cdk-describedby-message-ng-1-3"]');
+    const buttons = document.querySelectorAll('button[aria-describedby="cdk-describedby-message-ng-1-4"]');
     buttons[1]?.click();'''
                 )
-                self.driver.sleep(1)
+                self.driver.sleep(4)
                 self.driver.run_js('''document.querySelector('div.map.flex.align-center.gap-6.justify-between.pointer > app-toggle > div').click()''')
-                self.driver.sleep(2)
+                self.driver.sleep(5)
                 self.driver.run_js("""
                     const items = document.querySelectorAll('div.item-container.selectable.check-end');
                     items[items.length - 1]?.click();
                 """)
-                self.driver.sleep(1)
+                self.driver.sleep(4)
                 self.driver.run_js("document.querySelector('button.chip-button.nowrap.button-only').click()")
                 print('---- Settings')
-                self.driver.sleep(2)
+                self.driver.sleep(4)
             else:
                 self.driver.run_js(
                     '''
@@ -311,38 +326,44 @@ p[0]?.click()'''
             self.driver.run_js('''[...document.querySelectorAll('div.mat-mdc-tooltip-trigger.primary-button.flex.align-center.justify-center.gap-4.medium.neutral')].find(el => el.textContent.includes('Сбросить'))?.click();''')
             #[...document.querySelectorAll('div.mat-mdc-tooltip-trigger.primary-button.flex.align-center.justify-center.gap-4.medium.neutral')].find(el => el.textContent.includes('Сбросить'))?.click();
             print('---- Resset settings')
-            self.driver.sleep(2)
+            self.driver.sleep(4)
 
             # self.driver.run_js('''[...document.querySelectorAll('span')].find(el => el.textContent.includes('Квартира во вторичке'))?.click();''')
             # print('---- delete filter')
-            # self.driver.sleep(2)
-
-            self.driver.run_js('''[...document.querySelectorAll('span')].find(el => el.textContent.includes('Не выбран'))?.click();''')
-            print('---- Go into country')
+            self.driver.type('input[placeholder="Улица, район, метро..."]', name)
+            self.driver.sleep(3)
+            txt = name
+            if name in ['Суздаль', 'Ковров']:
+                txt = name + ", Владимирская область"
+            self.driver.run_js(f'''[...document.querySelectorAll('span')].find(el => el.textContent.includes('{txt}'))?.click();''')
             self.driver.sleep(3)
 
-            self.driver.run_js('''[...document.querySelectorAll('div.areas__item.ng-star-inserted')].find(el => el.textContent.includes('Россия'))?.click();''')
-            print('---- Select Russia')
-            self.driver.sleep(3)
-            self.driver.run_js(
-                '''[...document.querySelectorAll('div.areas__item.ng-star-inserted')].find(el => el.textContent.includes('Владимирская'))?.click();''')
-            print('---- Select Vladimirskaya')
-
-
-            query = '''[...document.querySelectorAll('div.areas__item')].find(el => el.textContent.includes('Владимир'))?.click();'''
-
-            if name == 'Ковров':
-                query = "[...document.querySelectorAll('div.areas__item.ng-star-inserted')].find(el => el.textContent.includes('Ковров'))?.click();"
-            elif name == 'Суздаль':
-                query = '''[...document.querySelectorAll('div.areas__item.ng-star-inserted')].find(el => el.textContent.includes('Суздаль'))?.click();'''
-
-            self.driver.sleep(3)
-            self.driver.run_js(query)
-            print(f'---- SELECT NAME == {name}')
-            self.driver.sleep(3)
-            self.driver.run_js('''document.querySelector('button.app-flat-button.app-button-base.green.medium.searchButton').click()''',)
-            print(f'---- Select view')
-            self.driver.sleep(3)
+            # self.driver.run_js('''[...document.querySelectorAll('span')].find(el => el.textContent.includes('Не выбран'))?.click();''')
+            # print('---- Go into country')
+            # self.driver.sleep(3)
+            #
+            # self.driver.run_js('''[...document.querySelectorAll('div.areas__item.ng-star-inserted')].find(el => el.textContent.includes('Россия'))?.click();''')
+            # print('---- Select Russia')
+            # self.driver.sleep(3)
+            # self.driver.run_js(
+            #     '''[...document.querySelectorAll('div.areas__item.ng-star-inserted')].find(el => el.textContent.includes('Владимирская'))?.click();''')
+            # print('---- Select Vladimirskaya')
+            #
+            #
+            # query = '''[...document.querySelectorAll('div.areas__item')].find(el => el.textContent.includes('Владимир'))?.click();'''
+            #
+            # if name == 'Ковров':
+            #     query = "[...document.querySelectorAll('div.areas__item.ng-star-inserted')].find(el => el.textContent.includes('Ковров'))?.click();"
+            # elif name == 'Суздаль':
+            #     query = '''[...document.querySelectorAll('div.areas__item.ng-star-inserted')].find(el => el.textContent.includes('Суздаль'))?.click();'''
+            #
+            # self.driver.sleep(3)
+            # self.driver.run_js(query)
+            # print(f'---- SELECT NAME == {name}')
+            # self.driver.sleep(3)
+            # self.driver.run_js('''document.querySelector('button.app-flat-button.app-button-base.green.medium').click()''')
+            # print(f'---- Select view')
+            # self.driver.sleep(3)
             self.driver.run_js('''document.querySelector('div.footer.flex.align-center.justify-between > div > button:last-child').click()''')
             print(f'---- Select commit')
             self.driver.sleep(4)
@@ -356,9 +377,9 @@ p[0]?.click()'''
             self.driver.sleep(4)
             try:
 
-                # self.driver.prompt()
-
                 self.auth_by_name(name=name, _part=_part)
+
+                # self.driver.prompt()
                 _part += 1
 
                 self.driver.sleep(4)
@@ -369,17 +390,31 @@ p[0]?.click()'''
 
                 logger.info(f"VT; ALL Items == {self.floor_count}")
                 try:
-                    for num in range(150):
+                    n = 120
+                    if name == 'Владимир':
+                        n = 150
+                    elif name == 'Суздаль':
+                        n = 50
+                    for num in range(n):
                         logger.info(f'VT; Iteration number {num}')
-                        self.driver.run_js(
-                            "document.querySelector('div.load-more-button-component.border-radius-4.flex.justify-center.p-10').click()")
-                        self.driver.sleep(2)
+                        self.driver.run_js('''
+const rows = document.querySelectorAll('app-cdk-row.cdk-row');
+
+if (rows.length > 0) {
+    rows[rows.length - 1].scrollIntoView({
+        behavior: 'smooth',
+        block: 'end'
+    });
+}
+                        ''')
+                        self.driver.sleep(randint(2, 3))
                 except:
                     ...
 
                 logger.success('VT; Success pars all cards link')
 
                 self.driver.sleep(4)
+
                 soup = BeautifulSoup(self.driver.page_html, 'lxml')
 
                 cnt_real, cnt_good = 0, 0

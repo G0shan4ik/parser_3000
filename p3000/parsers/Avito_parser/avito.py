@@ -47,8 +47,8 @@ class AvitoParser(BaseParserSelenium):
 
         self.pars_names: list[str] = [
             'Ivanovo',
-            'Vladimir',
             'Kovrov',
+            'Vladimir',
         ]
         self.rus_name = {
             'Kovrov': 'Ковров',
@@ -366,24 +366,24 @@ class AvitoParser(BaseParserSelenium):
         for _name in self.pars_names:
             self.site_name = _name
 
-            # logger.info(f'AvitoParser ({_name}); Started authorize')
-            # self.auth_avito(link=self.pars_links[_name], try_cnt=try_cnt)
-            # try_cnt += 1
-            # logger.success(f'AvitoParser ({_name}); SUCCESS authorize')
+            logger.info(f'AvitoParser ({_name}); Started authorize')
+            self.auth_avito(link=self.pars_links[_name], try_cnt=try_cnt)
+            try_cnt += 1
+            logger.success(f'AvitoParser ({_name}); SUCCESS authorize')
 
             # logger.info(f'AvitoParser ({_name}); Start Pars PAGES')
             # self.pars_all_pages(name=_name, start_url=self.pars_links[_name])
             # logger.success(f'AvitoParser ({_name}); SUCCESS Pars PAGES')
-
-            # logger.info(f'AvitoParser ({_name}); Start Pars ALL_DATA')
-            # self.pars_data(name=_name)
-            # logger.success(f'AvitoParser ({_name}); SUCCESS Pars ALL_DATA')
+            #
+            logger.info(f'AvitoParser ({_name}); Start Pars ALL_DATA')
+            self.pars_data(name=_name)
+            logger.success(f'AvitoParser ({_name}); SUCCESS Pars ALL_DATA')
 
             _cache = CacheCore(cache_name=f'{_name}')
             self.result_mass = _cache.get_all_values()
             self.floor_count = _cache.size()
 
-            _exel_name = f"all_exel/exel_2026-10-02/{datetime.now().date()}_{self.site_name}.xlsx"     # МЕНЯТЬ ДАТУ ПАПКИ
+            _exel_name = f"all_exel/exel_2026-10-16/{datetime.now().date()}_{self.site_name}.xlsx"     # МЕНЯТЬ ДАТУ ПАПКИ
             self.to_exel(mass=self.result_mass, exel_name=_exel_name)
             logger.info(f'AvitoitoParser; Avito flats {_name} count == {self.floor_count}')
 
@@ -398,6 +398,6 @@ if __name__ == '__main__':
         exel=False,
         headless=False,
 
-        _date='02.10.2026'  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        _date='16.10.2026'  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     )
     per.run()

@@ -21,6 +21,16 @@ class BaseModel:
         self.site_name: str = site_name
         self.err_name: [FlagKey] = err_name
 
+    @staticmethod
+    def remove_duplicates(data: list[dict]) -> list[dict]:
+        result = []
+
+        for item in data:
+            if item not in result:
+                result.append(item)
+
+        return result
+
     async def update_err(self, error: str) -> None:
         fl = FlagsManager()
 

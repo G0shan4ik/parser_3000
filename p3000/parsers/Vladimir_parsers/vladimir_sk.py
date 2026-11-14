@@ -1,3 +1,5 @@
+import time
+
 from loguru import logger
 from bs4 import BeautifulSoup
 import lxml
@@ -13,11 +15,10 @@ class VladimirParser(BaseAsyncParserRequests):
     def __init__(self, err_name = None, exel: bool = False, single: bool = False):
         super().__init__(
             all_links=[
-                'https://www.sk-continent.ru/api/v1/property/properties/?page=1&page_size=10000&type=0',  # good link
-                'https://vladimir.sk-continent.ru/api/v1/property/properties/?page=1&page_size=10000&type=0',  # good link
-                # 'https://vladimir.sk-continent.ru/api/v1/property/properties/?type=0&page=1&page_size=10000',
-                # 'https://www.sk-continent.ru/api/v1/property/properties/?type=0&page=1&page_size=1',
-                # 'https://www.sk-continent.ru/api/v1/property/properties/?type=0&project=12345&page=1&page_size=10000'
+                'https://vladimir.sk-continent.ru/api/v1/property/properties/?type=0&page=1&page_size=10000',
+                'https://www.sk-continent.ru/api/v1/property/properties/?type=0&project=12345&page=1&page_size=10000',
+                'https://www.sk-continent.ru/api/v1/property/properties/?page=1&page_size=10000&type=0',
+                'https://www.sk-continent.ru/api/v1/property/properties/?type=0&page=1&page_size=10000',
             ],
             site_name='vladimir_sk',
             exel=exel,
@@ -82,7 +83,7 @@ class VladimirParser(BaseAsyncParserRequests):
 
             # url = f'{url[:-1]}{pagination}'
 
-            async with self.session.get(url) as response:
+            async with self.session.get(url, ) as response:
                 data = await response.json()
                 await asyncio.sleep(0)
 
@@ -101,8 +102,19 @@ class VladimirParser(BaseAsyncParserRequests):
                     except:
                         price_100 = self.num(item["price"].replace('.00', ''))
                     if item['status'] == 'AVAILABLE':
+                        gk_name = 'ЖК Маршал' if 'жк маршал' in item['project_title'].lower() else item['project_title']
+                        if gk_name == 'ЖК Маршал':
+                            gk_name = 'ЖК Маршал, корп 2' if item['house'] == 'Еловая, 82Б' else 'ЖК Маршал, корп 1'
 
-                        gk_name = 'ЖК Маршал' if 'ЖК Маршал' in item['project_title'] else item['project_title']
+                        if 'ТРИЛОГИЯ' == item['project_title']:
+                            if item['house'][-1] == 'А':
+                                gk_name = 'ЖК Трилогия. Синий дом'
+                            elif item['house'][-1] == 'Б':
+                                gk_name = 'ЖК Трилогия. Красный дом'
+                            else:
+                                gk_name = 'ЖК Трилогия. Зеленый дом'
+
+
                         if 'Микрорайон Славный' in gk_name or 'VERIZINO life' in gk_name:
                             gk_name = "Еловая, 82" if 'ЖК Маршал' in item['project_title'] else item['house']
                         if 'cвобода' in gk_name.lower() or 'усадьба за клязьмой' in gk_name.lower():
@@ -146,6 +158,7 @@ class VladimirParser(BaseAsyncParserRequests):
             logger.error(f'Fatal ERROR VladimirSK for url({url}) ->\n{ex}\n\n')
 
         self.floor_count = len(self.result_mass)
+        self.result_mass = self.remove_duplicates(self.result_mass)
 
 
 if __name__ == '__main__':
