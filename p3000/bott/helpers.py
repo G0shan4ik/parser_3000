@@ -16,7 +16,7 @@ PARSING_LIST_TEXT = f'''
 5) {hbold("VladimirSK")}   -_-   (📗 async parser)
 
 
-\t\t# Vladimir parsers (8 parsers)
+\t\t# Ivanovo parsers (9 parsers)
 1) {hbold("EuropeyStile")}   -_-   (📘 sync parser)
 2) {hbold("Olimp")}   -_-   (📗 async parser)
 3) {hbold("Vidniy")}   -_-   (📘 sync parser)
@@ -25,6 +25,7 @@ PARSING_LIST_TEXT = f'''
 6) {hbold("Levitan")}   -_-   (📙 selenium parser)
 7) {hbold("KSK_Holding")}   -_-   (📙 selenium parser)
 8) {hbold("Fenix")}   -_-   (📙 selenium parser)
+9) {hbold("Miyata")}   -_-   (📘 sync parser)
 '''
 
 
@@ -33,7 +34,7 @@ FlagKey = Literal[
 
     "Aviator", "Glorax", "Legenda", "Nmarket", "VladimirSK",    # Vladimir parsers names
 
-    "EuropeyStile", "Olimp", "Vidniy", "CSY", "DefaultKvartal", "Levitan", "KSK_Holding", "Fenix"   # Ivanovo parsers names
+    "EuropeyStile", "Olimp", "Vidniy", "CSY", "DefaultKvartal", "Levitan", "KSK_Holding", "Fenix", "Miyata"   # Ivanovo parsers names
 ]
 
 StateValue = Literal["disabled", "in process", "completed!"]    # States name
@@ -54,7 +55,7 @@ __vladimir_parsers_names = [
 ]
 __ivanovo_parsers_names = [
     "EuropeyStile", "Olimp", "Vidniy", "CSY", "DefaultKvartal",
-    "Levitan", "KSK_Holding", "Fenix"
+    "Levitan", "KSK_Holding", "Fenix", "Miyata"
 ]
 
 

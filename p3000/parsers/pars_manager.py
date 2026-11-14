@@ -8,7 +8,7 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
 from .Vladimir_parsers import vladimir_sk, legenda, aviator, glorax, vt
-from .Ivanovo_parsers import csy, default_kvartal, evropey_stile, fenix, ksk_holding, levitan, olimp, vidniy, akvilon, stroitec
+from .Ivanovo_parsers import csy, default_kvartal, evropey_stile, fenix, ksk_holding, levitan, miyata, olimp, vidniy, akvilon, stroitec
 
 
 class BaseManager:
@@ -93,6 +93,7 @@ class IvanovoManager(BaseManager):
         parsers = [
             (stroitec.StroiTecParser, (), {'headless': False, 'err_name': ['stroitec', 'StroiTec']}),
             (akvilon.AkvilonParser, (), {'err_name': ['all_pars', 'Akvilon']}),
+            (miyata.MiyataParser, (), {'err_name': ['ivan', 'Miyata']}),
             (csy.CSYParser, (), {'err_name': ['ivan', 'CSY']}),
             (default_kvartal.DefaultKvartalParser, (), {'err_name': ['ivan', 'DefaultKvartal']}),
             (evropey_stile.EuropeyStileParser, (), {'err_name': ['ivan', 'EuropeyStile']}),
@@ -150,6 +151,7 @@ class AllParsManager(BaseManager):
 
             (vladimir_sk.VladimirParser, (), {'err_name': ['all_pars', 'VladimirSK']}),
             (akvilon.AkvilonParser, (), {'err_name': ['all_pars', 'Akvilon']}),
+            (miyata.MiyataParser, (), {'err_name': ['all_pars', 'Miyata']}),
             (legenda.LegendaParser, (), {'err_name': ['all_pars', 'Legenda']}),
             (aviator.AviatorParser, (), {'err_name': ['all_pars', 'Aviator']}),
             (glorax.GloraxParser, (), {'err_name': ['all_pars', 'Glorax']}),

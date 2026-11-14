@@ -10,11 +10,11 @@ from openpyxl import Workbook, load_workbook
 # ============================================================
 
 
-DATE_FILE = "2026-10-02"  # дата, которая устанавливается только в файлах
+DATE_FILE = "2026-11-12"  # дата, которая устанавливается только в файлах
 DATE_OBJ_F = datetime.strptime(DATE_FILE, "%Y-%m-%d")
 DATE_FILE = DATE_OBJ_F.strftime("%Y-%m-%d")
 
-DATE = "2026-10-02"  # дата, которая прописывается в столбцах и создает папку
+DATE = "2026-11-13"  # дата, которая прописывается в столбцах и создает папку
 DATE_DATETIME = datetime.strptime(DATE, "%Y-%m-%d") # для экселя в столбце Дата
 DATE_OBJ = datetime.strptime(DATE, "%Y-%m-%d")
 DATE_FILE_AVITO = DATE_OBJ.strftime("%Y-%m-%d")
@@ -37,63 +37,63 @@ RESULT_DIR = Path.cwd() / "result_files" / RESULT_DATE
 
 MERGE_FILES = {
     # --------------------- ДКП ---------------------
-    "ДКП RESULT": [
-        BASE_DIR
-        / "p3000"
-        / "parsers"
-        / "Avito_parser"
-        / "all_exel"
-        / f"exel_{DATE_FILE_AVITO}"
-        / f"{DATE_FILE}_Ivanovo.xlsx",
-
-        BASE_DIR
-        / "p3000"
-        / "parsers"
-        / "Avito_parser"
-        / "all_exel"
-        / f"exel_{DATE_FILE_AVITO}"
-        / f"{DATE_FILE}_Kovrov.xlsx",
-
-        BASE_DIR
-        / "p3000"
-        / "parsers"
-        / "Avito_parser"
-        / "all_exel"
-        / f"exel_{DATE_FILE_AVITO}"
-        / f"{DATE_FILE}_Vladimir.xlsx",
-    ],
-
-    # ------------------ ОМЦ Владимир ------------------
-    # "ОМЦ Владимир": [
+    # "ДКП RESULT": [
     #     BASE_DIR
     #     / "p3000"
     #     / "parsers"
-    #     / "Vladimir_parsers"
+    #     / "Avito_parser"
     #     / "all_exel"
-    #     / f"{DATE_FILE}_vt.xlsx",
-    #
-    #     BASE_DIR
-    #     / "p3000"
-    #     / "parsers"
-    #     / "Vladimir_parsers"
-    #     / "all_exel"
-    #     / f"vt.xlsx",
-    #
-    #     BASE_DIR
-    #     / "all_exel"
-    #     / f"{DATE_FILE}_Vladimir.xlsx",
-    # ],
-
-    # ------------------ ОМЦ Иваново ------------------
-    # "ОМЦ Иваново": [
-    #     BASE_DIR
-    #     / "all_exel"
+    #     / f"exel_{DATE_FILE_AVITO}"
     #     / f"{DATE_FILE}_Ivanovo.xlsx",
     #
     #     BASE_DIR
-    #     / "merge_files_module"
-    #     / "нити_макет.xlsx",
+    #     / "p3000"
+    #     / "parsers"
+    #     / "Avito_parser"
+    #     / "all_exel"
+    #     / f"exel_{DATE_FILE_AVITO}"
+    #     / f"{DATE_FILE}_Kovrov.xlsx",
+    #
+    #     BASE_DIR
+    #     / "p3000"
+    #     / "parsers"
+    #     / "Avito_parser"
+    #     / "all_exel"
+    #     / f"exel_{DATE_FILE_AVITO}"
+    #     / f"{DATE_FILE}_Vladimir.xlsx",
     # ],
+
+    # ------------------ ОМЦ Владимир ------------------
+    "ОМЦ Владимир": [
+        BASE_DIR
+        / "p3000"
+        / "parsers"
+        / "Vladimir_parsers"
+        / "all_exel"
+        / f"{DATE_FILE}_vt.xlsx",
+
+        BASE_DIR
+        / "p3000"
+        / "parsers"
+        / "Vladimir_parsers"
+        / "all_exel"
+        / f"vt.xlsx",
+
+        BASE_DIR
+        / "all_exel"
+        / f"{DATE_FILE}_Vladimir.xlsx",
+    ],
+
+    # ------------------ ОМЦ Иваново ------------------
+    "ОМЦ Иваново": [
+        BASE_DIR
+        / "all_exel"
+        / f"{DATE_FILE}_Ivanovo.xlsx",
+
+        BASE_DIR
+        / "merge_files_module"
+        / "нити_макет.xlsx",
+    ],
 }
 
 

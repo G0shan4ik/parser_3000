@@ -10,6 +10,7 @@ start_pars = {
 
     "EuropeyStile": [Ivanovo_parsers.evropey_stile.EuropeyStileParser(exel=True, single=True), "sync"],
     "Olimp": [Ivanovo_parsers.olimp.OlimpParser(exel=True, single=True), "async"],
+    "Miyata": [Ivanovo_parsers.miyata.MiyataParser(exel=True, single=True), "sync"],
     "Vidniy": [Ivanovo_parsers.vidniy.VidniyParser(exel=True, single=True), "sync"],
     "CSY": [Ivanovo_parsers.csy.CSYParser(exel=True, single=True), "sync"],
     "DefaultKvartal": [Ivanovo_parsers.default_kvartal.DefaultKvartalParser(exel=True, single=True), "sync"],
