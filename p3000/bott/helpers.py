@@ -22,7 +22,7 @@ PARSING_LIST_TEXT = f'''
 3) {hbold("Vidniy")}   -_-   (📘 sync parser)
 4) {hbold("CSY")}   -_-   (📘 sync parser)
 5) {hbold("DefaultKvartal")}   -_-   (📘 sysync parser)
-6) {hbold("Levitan")}   -_-   (📙 selenium parser)
+6) {hbold("Levitan")}   -_-   (📘 sync parser)
 7) {hbold("KSK_Holding")}   -_-   (📙 selenium parser)
 8) {hbold("Fenix")}   -_-   (📙 selenium parser)
 9) {hbold("Miyata")}   -_-   (📘 sync parser)

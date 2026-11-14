@@ -14,7 +14,7 @@ start_pars = {
     "Vidniy": [Ivanovo_parsers.vidniy.VidniyParser(exel=True, single=True), "sync"],
     "CSY": [Ivanovo_parsers.csy.CSYParser(exel=True, single=True), "sync"],
     "DefaultKvartal": [Ivanovo_parsers.default_kvartal.DefaultKvartalParser(exel=True, single=True), "sync"],
-    "Levitan": [Ivanovo_parsers.levitan.LevitanParser(exel=True, single=True), "selenium"],
+    "Levitan": [Ivanovo_parsers.levitan.LevitanParser(exel=True, single=True), "sync"],
     "KSK_Holding": [Ivanovo_parsers.ksk_holding.KSKHoldingParser(exel=True, single=True), "selenium"],
     "Fenix": [Ivanovo_parsers.fenix.FenixParser(exel=True, single=True, headless=False), "selenium"],
 }
